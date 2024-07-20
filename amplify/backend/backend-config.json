@@ -52,9 +52,37 @@
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    },
+    "testFunction": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "hosting": {
+    "amplifyhosting": {
+      "providerPlugin": "awscloudformation",
+      "service": "amplifyhosting",
+      "type": "manual"
     }
   },
   "parameters": {
+    "AMPLIFY_function_centsablec05fdf32CreateAuthChallenge_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32CreateAuthChallenge"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsablec05fdf32CreateAuthChallenge_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32CreateAuthChallenge"
+        }
+      ]
+    },
     "AMPLIFY_function_centsablec05fdf32CustomMessage_EMAILMESSAGE": {
       "usedBy": [
         {
@@ -79,7 +107,55 @@
         }
       ]
     },
+    "AMPLIFY_function_centsablec05fdf32CustomMessage_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32CustomMessage"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsablec05fdf32CustomMessage_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32CustomMessage"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsablec05fdf32DefineAuthChallenge_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32DefineAuthChallenge"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsablec05fdf32DefineAuthChallenge_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32DefineAuthChallenge"
+        }
+      ]
+    },
     "AMPLIFY_function_centsablec05fdf32PostConfirmation_GROUP": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32PostConfirmation"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsablec05fdf32PostConfirmation_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32PostConfirmation"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsablec05fdf32PostConfirmation_s3Key": {
       "usedBy": [
         {
           "category": "function",
@@ -92,6 +168,54 @@
         {
           "category": "function",
           "resourceName": "centsablec05fdf32VerifyAuthChallengeResponse"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsablec05fdf32VerifyAuthChallengeResponse_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32VerifyAuthChallengeResponse"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsablec05fdf32VerifyAuthChallengeResponse_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsablec05fdf32VerifyAuthChallengeResponse"
+        }
+      ]
+    },
+    "AMPLIFY_function_testFunction_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "testFunction"
+        }
+      ]
+    },
+    "AMPLIFY_function_testFunction_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "testFunction"
+        }
+      ]
+    },
+    "AMPLIFY_hosting_amplifyhosting_appId": {
+      "usedBy": [
+        {
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
+        }
+      ]
+    },
+    "AMPLIFY_hosting_amplifyhosting_type": {
+      "usedBy": [
+        {
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
         }
       ]
     }
