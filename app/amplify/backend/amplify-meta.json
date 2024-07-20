@@ -1,0 +1,58 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-centsable-centsable-663fd-authRole",
+      "UnauthRoleArn": "arn:aws:iam::730335261196:role/amplify-centsable-centsable-663fd-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::730335261196:role/amplify-centsable-centsable-663fd-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-centsable-centsable-663fd-deployment",
+      "UnauthRoleName": "amplify-centsable-centsable-663fd-unauthRole",
+      "StackName": "amplify-centsable-centsable-663fd",
+      "StackId": "arn:aws:cloudformation:us-east-2:730335261196:stack/amplify-centsable-centsable-663fd/34ad83a0-46e0-11ef-a1a1-023a201d439d",
+      "AmplifyAppId": "d32f01xhda5k4w"
+    }
+  },
+  "auth": {
+    "centsable3f0fb72a": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "frontendAuthConfig": {
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL"
+        ],
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-centsable-centsable-663fd-deployment/amplify-cfn-templates/auth/centsable3f0fb72a-cloudformation-template.json",
+        "logicalId": "authcentsable3f0fb72a"
+      },
+      "lastPushTimeStamp": "2024-07-20T21:41:09.884Z",
+      "output": {
+        "UserPoolId": "us-east-2_hsfmmE4bg",
+        "AppClientIDWeb": "65a8ub6tn2hj8mud7sg2l17585",
+        "AppClientID": "7p37og28gjaihqetosm10vn29i",
+        "IdentityPoolId": "us-east-2:f72c2a8f-b9f9-4417-8de7-4fcf6e44ac5e",
+        "UserPoolArn": "arn:aws:cognito-idp:us-east-2:730335261196:userpool/us-east-2_hsfmmE4bg",
+        "IdentityPoolName": "centsable3f0fb72a_identitypool_3f0fb72a__centsable",
+        "UserPoolName": "centsable3f0fb72a_userpool_3f0fb72a"
+      },
+      "lastPushDirHash": "Emvy/Lj0azieqfER5HTXWhNvNn8="
+    }
+  }
+}
