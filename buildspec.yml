@@ -1,0 +1,18 @@
+version: 1
+
+phases:
+  pre_build:
+    commands:
+      - echo Changing directory to Centsable/app...
+      - cd Centsable/app
+      - echo Installing NPM dependencies...
+      - npm install
+  build:
+    commands:
+      - echo Building the project...
+      - npm run build
+
+artifacts:
+  baseDirectory: Centsable/app/dist # Adjust according to your build output directory
+  files:
+    - '**/*'
