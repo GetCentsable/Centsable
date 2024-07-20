@@ -1,7 +1,4 @@
 {
-<<<<<<< HEAD
-  "hosting": {}
-=======
   "auth": {
     "centsable3f0fb72a": {
       "customAuth": false,
@@ -30,5 +27,4 @@
       "service": "Cognito"
     }
   }
->>>>>>> sprint1
 }
