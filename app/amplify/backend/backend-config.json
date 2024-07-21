@@ -15,7 +15,45 @@
       "service": "API Gateway"
     }
   },
+  "auth": {
+    "centsableb64cbd8e": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyCharacters": [],
+          "passwordPolicyMinLength": 8
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito"
+    }
+  },
   "function": {
+    "centsable8639d936CreateAuthChallenge": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "centsable8639d936DefineAuthChallenge": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "findUserTest": {
       "build": true,
       "dependsOn": [],
@@ -24,6 +62,38 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_centsable8639d936CreateAuthChallenge_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsable8639d936CreateAuthChallenge"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsable8639d936CreateAuthChallenge_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsable8639d936CreateAuthChallenge"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsable8639d936DefineAuthChallenge_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsable8639d936DefineAuthChallenge"
+        }
+      ]
+    },
+    "AMPLIFY_function_centsable8639d936DefineAuthChallenge_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "centsable8639d936DefineAuthChallenge"
+        }
+      ]
+    },
     "AMPLIFY_function_findUserTest_deploymentBucketName": {
       "usedBy": [
         {

@@ -16,10 +16,21 @@
         "findUserTest": {
           "deploymentBucketName": "amplify-centsable-dev-29544-deployment",
           "s3Key": "amplify-builds/findUserTest-4570753459444f586652-build.zip"
+        },
+        "centsable8639d936CreateAuthChallenge": {
+          "deploymentBucketName": "amplify-centsable-dev-29544-deployment",
+          "s3Key": "amplify-builds/centsable8639d936CreateAuthChallenge-4c2f504657746f4a4e38-build.zip"
+        },
+        "centsable8639d936DefineAuthChallenge": {
+          "deploymentBucketName": "amplify-centsable-dev-29544-deployment",
+          "s3Key": "amplify-builds/centsable8639d936DefineAuthChallenge-71534e646a3859335159-build.zip"
         }
       },
       "api": {
         "centsableApiGateway": {}
+      },
+      "auth": {
+        "centsableb64cbd8e": {}
       }
     }
   }
