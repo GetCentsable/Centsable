@@ -3,29 +3,29 @@ import { get } from 'aws-amplify/api';
 import React, { useEffect, useState } from 'react';
 
 const myAPI = "centsableApiGateway";
-const path = '/users/1'; 
+const path = '/user/1/'; 
 
 const App = () => {
   const [hello, setHello] = useState('');
 
   // Function to fetch from our backend and update customers array
-  async function getCustomer() {
-    try {
-      const restOp = get({
-        apiName: myAPI,
-        path: path,
-      });
-      const response = await restOp.response;
-      console.log('GET CALL WORKED:', response);
-      setHello(response.statusCode);
-    } catch (e) {
-      console.log('ERROR:', e);
-    }
-  }
+  // async function getCustomer() {
+  //   try {
+  //     const restOp = get({
+  //       apiName: myAPI,
+  //       path: path,
+  //     });
+  //     const response = await restOp.response;
+  //     console.log('GET CALL WORKED:', response);
+  //     setHello(response.statusCode);
+  //   } catch (e) {
+  //     console.log('ERROR:', e);
+  //   }
+  // }
 
-  useEffect(() => {
-    getCustomer();
-  }, []);
+  // useEffect(() => {
+  //   getCustomer();
+  // }, []);
 
   return (
     <div className="App">
