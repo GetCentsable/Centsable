@@ -6,28 +6,5 @@
       "endpoint": "https://ja6oif0pj1.execute-api.us-east-2.amazonaws.com/dev",
       "region": "us-east-2"
     }
-  ],
-  "aws_cognito_identity_pool_id": "us-east-2:ad0a7017-75f9-48ed-a7f4-c99c522522c0",
-  "aws_cognito_region": "us-east-2",
-  "aws_user_pools_id": "us-east-2_lTTybkC1B",
-  "aws_user_pools_web_client_id": "fugcnbg652m02t7gvqf3mmg4k",
-  "oauth": {},
-  "aws_cognito_username_attributes": [
-    "EMAIL"
-  ],
-  "aws_cognito_social_providers": [],
-  "aws_cognito_signup_attributes": [
-    "EMAIL"
-  ],
-  "aws_cognito_mfa_configuration": "OFF",
-  "aws_cognito_mfa_types": [
-    "SMS"
-  ],
-  "aws_cognito_password_protection_settings": {
-    "passwordPolicyMinLength": 8,
-    "passwordPolicyCharacters": []
-  },
-  "aws_cognito_verification_mechanisms": [
-    "EMAIL"
   ]
 }
