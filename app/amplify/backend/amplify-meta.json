@@ -1,0 +1,72 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-centsable-dev-29544-authRole",
+      "UnauthRoleArn": "arn:aws:iam::730335261196:role/amplify-centsable-dev-29544-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::730335261196:role/amplify-centsable-dev-29544-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-centsable-dev-29544-deployment",
+      "UnauthRoleName": "amplify-centsable-dev-29544-unauthRole",
+      "StackName": "amplify-centsable-dev-29544",
+      "StackId": "arn:aws:cloudformation:us-east-2:730335261196:stack/amplify-centsable-dev-29544/97b0b220-4775-11ef-9625-0a7147e03fe1",
+      "AmplifyAppId": "d3cckxwp645i6d"
+    }
+  },
+  "function": {
+    "findUserTest": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [],
+      "lastBuildTimeStamp": "2024-07-21T15:45:47.359Z",
+      "lastBuildType": "DEV",
+      "lastPackageTimeStamp": "2024-07-21T15:45:47.467Z",
+      "distZipFilename": "findUserTest-4570753459444f586652-build.zip",
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-centsable-dev-29544-deployment",
+        "s3Key": "amplify-builds/findUserTest-4570753459444f586652-build.zip"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-centsable-dev-29544-deployment/amplify-cfn-templates/function/findUserTest-cloudformation-template.json",
+        "logicalId": "functionfindUserTest"
+      },
+      "lastPushTimeStamp": "2024-07-21T15:47:22.286Z",
+      "output": {
+        "LambdaExecutionRoleArn": "arn:aws:iam::730335261196:role/centsableLambdaRole120afb6e-dev",
+        "Region": "us-east-2",
+        "Arn": "arn:aws:lambda:us-east-2:730335261196:function:findUserTest-dev",
+        "Name": "findUserTest-dev",
+        "LambdaExecutionRole": "centsableLambdaRole120afb6e-dev"
+      },
+      "lastPushDirHash": "a9+sl0BAYSrNkXB2C+NAB9brnoQ=",
+      "lastDevBuildTimeStamp": "2024-07-21T16:02:10.881Z"
+    }
+  },
+  "api": {
+    "centsableApiGateway": {
+      "service": "API Gateway",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "findUserTest",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        }
+      ],
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-centsable-dev-29544-deployment/amplify-cfn-templates/api/centsableApiGateway-cloudformation-template.json",
+        "logicalId": "apicentsableApiGateway"
+      },
+      "lastPushTimeStamp": "2024-07-21T15:47:22.286Z",
+      "output": {
+        "ApiName": "centsableApiGateway",
+        "RootUrl": "https://ja6oif0pj1.execute-api.us-east-2.amazonaws.com/dev",
+        "ApiId": "ja6oif0pj1"
+      },
+      "lastPushDirHash": "E8Rb19wy+PUn06xxUYAQzBnCkV8="
+    }
+  }
+}
