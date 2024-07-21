@@ -1,0 +1,44 @@
+{
+  "api": {
+    "centsableApiGateway": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "findUserTest"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "function": {
+    "findUserTest": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_findUserTest_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "findUserTest"
+        }
+      ]
+    },
+    "AMPLIFY_function_findUserTest_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "findUserTest"
+        }
+      ]
+    }
+  }
+}
