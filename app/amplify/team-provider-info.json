@@ -28,9 +28,6 @@
       },
       "api": {
         "centsableApiGateway": {}
-      },
-      "auth": {
-        "centsableb64cbd8e": {}
       }
     }
   }
