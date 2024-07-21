@@ -1,13 +1,9 @@
 import './App.css';
-import Amplify from 'aws-amplify';
 import { get } from 'aws-amplify/api';
 import React, { useEffect, useState } from 'react';
-import awsconfig from './aws-exports';
 
-Amplify.configure(awsconfig);
-
-const myAPI = "censtableApiGateway";
-const path = '/users'; 
+const myAPI = "centsableApiGateway";
+const path = '/users/1'; 
 
 const App = () => {
   const [hello, setHello] = useState('');
@@ -21,7 +17,7 @@ const App = () => {
       });
       const response = await restOp.response;
       console.log('GET CALL WORKED:', response);
-      setHello(response.body);
+      setHello(response.statusCode);
     } catch (e) {
       console.log('ERROR:', e);
     }
