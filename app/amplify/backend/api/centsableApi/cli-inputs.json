@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/centsable": {
+      "name": "/centsable",
+      "lambdaFunction": "testFunction",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

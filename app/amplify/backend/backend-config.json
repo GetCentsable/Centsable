@@ -1,0 +1,44 @@
+{
+  "api": {
+    "centsableApi": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "testFunction"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "function": {
+    "testFunction": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_testFunction_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "testFunction"
+        }
+      ]
+    },
+    "AMPLIFY_function_testFunction_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "testFunction"
+        }
+      ]
+    }
+  }
+}
