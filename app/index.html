@@ -4,10 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+
+    <!-- Link imports inter font style -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+    <title>Centsable</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/index.jsx"></script>
+    <!-- Below script is a vite workaround for 'global is not defined' error -->
+    <script>
+      window.global = window;
+      window.process = {
+        env: { DEBUG: undefined },
+      }
+      var exports = {};
+    </script>
   </body>
 </html>

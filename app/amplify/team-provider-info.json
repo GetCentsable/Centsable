@@ -15,7 +15,7 @@
       "function": {
         "testFunction": {
           "deploymentBucketName": "amplify-centsable-dev-7ff3e-deployment",
-          "s3Key": "amplify-builds/testFunction-77706552643971443730-build.zip"
+          "s3Key": "amplify-builds/testFunction-6544517861486334514c-build.zip"
         }
       },
       "api": {
