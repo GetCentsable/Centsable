@@ -13,5 +13,13 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/index.jsx"></script>
+    <!-- Below script is a vite workaround for 'global is not defined' error -->
+    <script>
+      window.global = window;
+      window.process = {
+        env: { DEBUG: undefined },
+      }
+      var exports = {};
+    </script>
   </body>
 </html>
