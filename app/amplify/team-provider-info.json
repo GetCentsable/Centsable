@@ -20,6 +20,10 @@
       },
       "api": {
         "centsableApi": {}
+      },
+      "auth": {
+        "centsable622da311": {},
+        "centsable0d7998f9": {}
       }
     }
   }
