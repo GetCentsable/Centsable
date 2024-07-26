@@ -9,6 +9,14 @@
           ],
           "category": "function",
           "resourceName": "testFunction"
+        },
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "testDatabaseQuery"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -16,6 +24,30 @@
     }
   },
   "auth": {
+    "centsable": {
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyCharacters": [],
+          "passwordPolicyMinLength": 8
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito",
+      "serviceType": "managed"
+    },
     "centsable0d7998f9": {
       "customAuth": false,
       "dependsOn": [],
@@ -43,6 +75,12 @@
     }
   },
   "function": {
+    "testDatabaseQuery": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "testFunction": {
       "build": true,
       "dependsOn": [],
@@ -51,6 +89,22 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_testDatabaseQuery_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "testDatabaseQuery"
+        }
+      ]
+    },
+    "AMPLIFY_function_testDatabaseQuery_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "testDatabaseQuery"
+        }
+      ]
+    },
     "AMPLIFY_function_testFunction_deploymentBucketName": {
       "usedBy": [
         {

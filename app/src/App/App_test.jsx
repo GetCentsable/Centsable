@@ -14,7 +14,7 @@ function App() {
     try {
       const restOp = get({
         apiName: 'centsableApi',
-        path: '/centsable'
+        path: '/centsable/testDatabaseQuery'
       });
 
       // Wait for a response from the endpoint, check its status
