@@ -1,0 +1,42 @@
+{
+  "version": "1",
+  "cognitoConfig": {
+    "identityPoolName": "centsable_identitypool_2ccd5651",
+    "allowUnauthenticatedIdentities": false,
+    "resourceNameTruncated": "centsa2ccd5651",
+    "userPoolName": "centsable_userpool_2ccd5651",
+    "autoVerifiedAttributes": [
+      "email"
+    ],
+    "mfaConfiguration": "OFF",
+    "mfaTypes": [
+      "SMS Text Message"
+    ],
+    "smsAuthenticationMessage": "Your authentication code is {####}",
+    "smsVerificationMessage": "Your verification code is {####}",
+    "emailVerificationSubject": "Your verification code",
+    "emailVerificationMessage": "Your verification code is {####}",
+    "defaultPasswordPolicy": false,
+    "passwordPolicyMinLength": 8,
+    "passwordPolicyCharacters": [],
+    "requiredAttributes": [
+      "email"
+    ],
+    "aliasAttributes": [],
+    "userpoolClientGenerateSecret": false,
+    "userpoolClientRefreshTokenValidity": 30,
+    "userpoolClientWriteAttributes": [
+      "email"
+    ],
+    "userpoolClientReadAttributes": [
+      "email"
+    ],
+    "userpoolClientLambdaRole": "centsa2ccd5651_userpoolclient_lambda_role",
+    "userpoolClientSetAttributes": false,
+    "authSelections": "identityPoolAndUserPool",
+    "resourceName": "centsable",
+    "sharedId": "2ccd5651",
+    "serviceName": "Cognito",
+    "useDefault": "manual"
+  }
+}

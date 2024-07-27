@@ -9,17 +9,27 @@
       "UnauthRoleName": "amplify-centsable-dev-7ff3e-unauthRole",
       "StackName": "amplify-centsable-dev-7ff3e",
       "StackId": "arn:aws:cloudformation:us-east-2:730335261196:stack/amplify-centsable-dev-7ff3e/1bc1ee20-47bd-11ef-a626-0a7fe807a2ed",
-      "AmplifyAppId": "d3rp38ut3jxbl0"
+      "AmplifyAppId": "d3rp38ut3jxbl0",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-centsable-dev-7ff3e-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
     },
     "categories": {
       "function": {
         "testFunction": {
           "deploymentBucketName": "amplify-centsable-dev-7ff3e-deployment",
           "s3Key": "amplify-builds/testFunction-6544517861486334514c-build.zip"
+        },
+        "testDatabaseQuery": {
+          "deploymentBucketName": "amplify-centsable-dev-7ff3e-deployment",
+          "s3Key": "amplify-builds/testDatabaseQuery-59545852624864496e6e-build.zip"
         }
       },
       "api": {
         "centsableApi": {}
+      },
+      "auth": {
+        "centsable622da311": {},
+        "centsable0d7998f9": {},
+        "centsable": {}
       }
     }
   }

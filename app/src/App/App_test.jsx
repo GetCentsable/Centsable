@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import reactLogo from '../assets/react.svg'
 import viteLogo from '/vite.svg'
-import { API, Auth } from 'aws-amplify';
+import { get } from 'aws-amplify/api';
+// import { withAuthenticator } from '@aws-amplify/ui-react';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -9,23 +10,27 @@ function App() {
 
   // Async function that test the lambda testFunction ()
   async function testLambda() {
-    const url = 'https://fn3peb3590.execute-api.us-east-2.amazonaws.com/dev/centsable';
-
+    // Create a rest operation to an api endpoint
     try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+      const restOp = get({
+        apiName: 'centsableApi',
+        path: '/centsable/testDatabaseQuery'
       });
 
-      if (response.status !== 200)  {
-        throw new Error(`HTTP request to /dev/centsable failed ${response.status}`);
+      // Wait for a response from the endpoint, check its status
+      const response = await restOp.response;
+      console.log('GET call succeeded: ', response.statusCode);
+
+      if (response.statusCode !== 200)  {
+        throw new Error(`HTTP request to /dev/centsable failed ${response.statusCode}`);
       }
 
-      const data = await response.json();
-      console.log(data);
-      setHello(data);
+      // Destructure the body for the 3 content types - str, blob, JSON
+      const { body } = await restOp.response;
+      const str = await body.text();
+      console.log(str);
+
+      setHello(str);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
