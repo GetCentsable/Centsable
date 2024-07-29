@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Button from '../Components/General/Button';
+import Button from '../Components/General/SimpleButton.jsx';
 import Input from '../Components/General/Input';
 import { app } from '../Firebase/firebase.js';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';

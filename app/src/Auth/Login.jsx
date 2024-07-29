@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Button from '../Components/General/Button';
+import Button from '../Components/General/SimpleButton.jsx';
 import Input from '../Components/General/Input';
 import { app } from '../Firebase/firebase.js';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
@@ -28,7 +28,7 @@ const Login = ({ setIsLoggedIn }) => {
 
       // The signed-in user object returned by firebase auth
       const user = userCredential.user;
-      console.log(user);
+      // console.log(user);
 
       const uid = userCredential.user.uid;
       const loginPost = {
