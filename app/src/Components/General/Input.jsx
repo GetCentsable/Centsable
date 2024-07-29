@@ -1,11 +1,11 @@
 import React from 'react';
 
 
-const Input = ({ type, value, onChange, className}) => {
+const Input = ({ type, id, value, onChange, className}) => {
   return (
     <input
       type={type}
-      id={type}
+      id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       required

@@ -28,7 +28,7 @@ exports.signup = functions.https.onRequest((req, res) => {
         username,
       });
 
-      res.status(201).send({ 'success': uid });
+      res.status(200).send({ 'success': uid });
     } catch (error) {
       res.status(500).send({ error: error.message });
     }

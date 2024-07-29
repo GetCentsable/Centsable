@@ -1,5 +1,4 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
 
 // Retrieve keys from .env file to keep secret
 const firebaseConfig = {
@@ -11,5 +10,5 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// Initialize firebase app to have firebase accessible
+export const app = initializeApp(firebaseConfig);

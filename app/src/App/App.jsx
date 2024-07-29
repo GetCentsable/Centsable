@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Dashboard from '../Dashboard/Dashboard.jsx'
-import Auth from '../Auth/Auth.jsx'
+import Landing from '../Landing/Landing.jsx'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Initialize isLoggedIn state
@@ -14,7 +14,7 @@ function App() {
         const elapsed = currentTime - parseInt(loginTimestamp, 10);
         const elapsedHours = elapsed / (1000 * 60 * 60);
         // User login in timestamp valid for 10 minutes
-        if (elapsedHours < 0.16) {
+        if (elapsedHours < 0.000000001) {
             // Session is still valid
             setIsLoggedIn(true);
         } else {
@@ -27,7 +27,7 @@ function App() {
 
   return (
     <>
-      {isLoggedIn ? <Dashboard /> : <Auth />}
+      {isLoggedIn ? <Dashboard /> : <Landing isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />}
     </>
   );
 }
