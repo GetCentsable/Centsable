@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Login from './Login';
 import Register from './Register';
 
-const AuthPage = () => {
+const Auth = () => {
 
 
   return (
@@ -35,4 +35,4 @@ const AuthPage = () => {
   );
 };
 
-export default AuthPage;
+export default Auth;
