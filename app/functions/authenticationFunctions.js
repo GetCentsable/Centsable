@@ -26,8 +26,6 @@ exports.signup = functions.https.onRequest((req, res) => {
       await db.collection('users').doc(uid).set({
         email,
         username,
-        pokeDollars: 100000,
-        lastLogin: admin.firestore.FieldValue.serverTimestamp()
       });
 
       res.status(201).send({ 'success': uid });
