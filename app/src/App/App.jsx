@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useContext } from 'react';
 import Dashboard from '../Dashboard/Dashboard.jsx'
 import Landing from '../Landing/Landing.jsx'
+import UserContext from '../Context/UserContext.jsx';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Initialize isLoggedIn state
+  const { isLoggedIn } = useContext(UserContext);
 
   useEffect(() => {
     // Check if user is already logged in and session is valid
@@ -27,7 +28,7 @@ function App() {
 
   return (
     <>
-      {isLoggedIn ? <Dashboard /> : <Landing isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />}
+      {isLoggedIn ? <Dashboard /> : <Landing />}
     </>
   );
 }
