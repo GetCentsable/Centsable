@@ -2,14 +2,13 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App/App'
 import './index.css'
-
-// Amazon Amplify configuration integration
-import { Amplify } from 'aws-amplify';
-import awsconfig from './aws-exports.js';
-Amplify.configure(awsconfig);
+// Plaid provider context for global plaid variables
+import { PlaidProvider } from "./Context/PlaidContext.jsx";
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <PlaidProvider>
+      <App />
+    </PlaidProvider>
   </React.StrictMode>,
 )

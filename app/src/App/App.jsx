@@ -1,32 +1,35 @@
-// import { useEffect, useState } from 'react'
-import Dashboard from '../Dashboard/Dashboard'
-import { Authenticator } from '@aws-amplify/ui-react';
+import React, { useEffect, useState } from 'react';
+import Dashboard from '../Dashboard/Dashboard.jsx'
+import Landing from '../Landing/Landing.jsx'
 
 function App() {
-  // const [isLoggedIn, setIsLoggedIn] = useState(true);
-  // const [userUsername, setUserUsername] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Initialize isLoggedIn state
+
+  useEffect(() => {
+    // Check if user is already logged in and session is valid
+    const loggedIn = localStorage.getItem('isLoggedIn');
+    const loginTimestamp = localStorage.getItem('loginTimestamp');
+    if (loggedIn && loginTimestamp) {
+        const currentTime = new Date().getTime();
+        const elapsed = currentTime - parseInt(loginTimestamp, 10);
+        const elapsedHours = elapsed / (1000 * 60 * 60);
+        // User login in timestamp valid for 10 minutes
+        if (elapsedHours < 0.000000001) {
+            // Session is still valid
+            setIsLoggedIn(true);
+        } else {
+            // Session has expired, log out the user
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('loginTimestamp');
+        }
+    }
+  }, []);
 
   return (
     <>
-      <Authenticator>
-      {({ signOut, user }) => (
-        <div className="App">
-          <header className="App-header">
-            <Dashboard userUsername={user.username} />
-            <button onClick={signOut}>Sign Out</button>
-          </header>
-        </div>
-      )}
-        {/* <div>
-          {isLoggedIn ? (
-            <Dashboard userUsername={userUsername} setIsLoggedIn={setIsLoggedIn} />
-          ) : (
-            <Auth setUserUsername={setUserUsername} setIsLoggedIn={setIsLoggedIn} />
-          )}
-        </div> */}
-      </Authenticator>
+      {isLoggedIn ? <Dashboard /> : <Landing isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
