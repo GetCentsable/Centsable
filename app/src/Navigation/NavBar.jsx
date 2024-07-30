@@ -3,7 +3,7 @@ import { faHome, faHistory, faWallet, faSearch, faArrowRightFromBracket, faForwa
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from '../Components/General/Button';
 import UserDrawer from '../Components/General/UserDrawer';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import UserContext from '../Context/UserContext';
 import { app } from '../Firebase/firebase';
 import { getAuth, signOut } from 'firebase/auth';
@@ -28,6 +28,7 @@ const NavBar = () => {
   const handleSignOut = async (e) => {
     e.preventDefault();
     try {
+      // Sign out with firebase auth
       await signOut(auth);
       setUser(null);
       setIsLoggedIn(false);
@@ -36,7 +37,7 @@ const NavBar = () => {
     } catch (error) {
       console.error('Error logging out:', error);
     }
-  }
+  };
 
   const navItems = [
     { icon: faHome, title: 'Home' },
@@ -101,10 +102,10 @@ const NavBar = () => {
             >
               {/* update user picture here */}
               <img src="https://picsum.photos/100/100" alt="User avatar" className="w-10 h-10 rounded-full" />
-              {isOpen && (
+              {isOpen && user && (
                 <div className="ml-3">
                   {/* <p className="text-neutral-200 font-semibold">{userUsername}</p> */}
-                  <p className="text-neutral-400 text-sm">{user.email}</p> 
+                  <p className="text-neutral-400 text-sm">{user.email}</p>
                 </div>
               )}
             </div>
