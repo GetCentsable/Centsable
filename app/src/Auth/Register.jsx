@@ -43,9 +43,6 @@ const Register = ({ setLogin, setSignUp }) => {
         const user = userCredential.user;
         // console.log(user);
 
-        // Add the user object into the userContext for global access
-        setUser(user);
-
         const uid = userCredential.user.uid;
         const signupPost = {
             email: email,
@@ -77,8 +74,15 @@ const Register = ({ setLogin, setSignUp }) => {
         }, 1600)
         setTimeout(() => {
             setSuccess(false);
-            setLogin(true);
+            setLogin(false);
             setSignUp(false);
+
+            // Store login timestamp in local storage
+            localStorage.setItem('loginTimestamp', new Date().getTime());
+            
+            // Add the user object into the userContext for global access
+            // and set log it to true to switch to dashboard
+            setUser(user);
             setIsLoggedIn(true);
         }, 3000)
       } catch (error) {
