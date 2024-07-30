@@ -23,6 +23,7 @@ const NavBar = () => {
 
   const toggleUserDrawer = () => {
     setIsUserDrawerOpen(!isUserDrawerOpen);
+    console.log('User name is:', user.username);
   };
 
   const handleSignOut = async (e) => {
@@ -104,7 +105,7 @@ const NavBar = () => {
               <img src="https://picsum.photos/100/100" alt="User avatar" className="w-10 h-10 rounded-full" />
               {isOpen && user && (
                 <div className="ml-3">
-                  {/* <p className="text-neutral-200 font-semibold">{userUsername}</p> */}
+                  <p className="text-neutral-200 font-semibold">{user.username}</p>
                   <p className="text-neutral-400 text-sm">{user.email}</p>
                 </div>
               )}
