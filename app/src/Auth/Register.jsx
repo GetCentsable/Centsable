@@ -3,6 +3,7 @@ import Button from '../Components/General/SimpleButton.jsx';
 import Input from '../Components/General/Input';
 import { app } from '../Firebase/firebase.js';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import UserContext from '../Context/UserContext.jsx';
 import loadingPig from '../assets/loading.gif';
 
@@ -20,6 +21,9 @@ const Register = ({ setLogin, setSignUp }) => {
 
   // Instantiate the auth service SDK
   const auth = getAuth(app);
+
+  // Instantiate the db with Firestore
+  const db = getFirestore(app);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,30 +47,11 @@ const Register = ({ setLogin, setSignUp }) => {
         const user = userCredential.user;
         // console.log(user);
 
-        const uid = userCredential.user.uid;
-        const signupPost = {
-            email: email,
-            uid: uid
-        }
-        // try {
-        //   fetch(signupUrl, {
-        //       method: 'POST',
-        //       headers: { "Content-Type": "application/json" },
-        //       body: JSON.stringify(signupPost)
-        //   })
-        // } catch (error) {
-        //   console.log('FAILED');
-        //   console.log(error);
-        //   setError(error.message);
-        //   setTimeout(() => {
-        //     setLoading(false);
-        //   }, 1000)
-        //   setFailed(true);
-        //   setTimeout(() => {
-        //       setFailed(false);
-        //       setIsSubmit(false);
-        //   }, 3000)
-        // }
+        // Save additional user info in Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          username: username,
+          email: email
+        });
 
         setTimeout(() => {
             setLoading(false);
@@ -95,7 +80,6 @@ const Register = ({ setLogin, setSignUp }) => {
         setFailed(true);
         setTimeout(() => {
             setFailed(false);
-            setIsSubmit(false);
         }, 3000)
       }
     }
