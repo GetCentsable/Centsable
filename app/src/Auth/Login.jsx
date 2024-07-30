@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Button from '../Components/General/SimpleButton.jsx';
 import Input from '../Components/General/Input';
 import { app } from '../Firebase/firebase.js';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import UserContext from '../Context/UserContext.jsx';
 
-const Login = ({ setIsLoggedIn }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [failed, setFailed] = useState(false);
+  const { setUser, setIsLoggedIn } = useContext(UserContext);
 
   // Instantiate the auth service SDK
   const auth = getAuth(app);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt with:', email, password);
+    // console.log('Login attempt with:', email, password);
     try {
       // Sign in with email and password in firebase auth service
       console.log('Sending auth login request');
@@ -29,6 +31,9 @@ const Login = ({ setIsLoggedIn }) => {
       // The signed-in user object returned by firebase auth
       const user = userCredential.user;
       // console.log(user);
+
+      // Add the user object into the userContext for global access
+      setUser(user);
 
       const uid = userCredential.user.uid;
       const loginPost = {
@@ -56,7 +61,7 @@ const Login = ({ setIsLoggedIn }) => {
 
       setIsLoggedIn(true);
     } catch (err) {
-        // Handle Errors here.
+        // Handle Errors here
         const errorMessage = err.message;
         setError(errorMessage);
         setFailed(true);

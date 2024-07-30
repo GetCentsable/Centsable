@@ -3,7 +3,7 @@ import Login from './Login';
 import Register from './Register';
 import logo from '../assets/logo.png';
 
-const Auth = ({ setIsLoggedIn, signUp, setSignUp, login, setLogin }) => {
+const Auth = ({ signUp, setSignUp, login, setLogin }) => {
 
   const handleToggle = (e) => {
     e.preventDefault;
@@ -17,7 +17,7 @@ const Auth = ({ setIsLoggedIn, signUp, setSignUp, login, setLogin }) => {
       <div className="w-full xl:w-1/2 bg-neutral-100 flex flex-col justify-center px-8 lg:px-16">
         <div className="max-w-md w-full mx-auto">
           <img src={logo} alt="Centsable logo" className="w-96" />
-          {login ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Register setLogin={setLogin} setSignUp={setSignUp} />}
+          {login ? <Login /> : <Register setLogin={setLogin} setSignUp={setSignUp} />}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               {login ? "New to Centsable? " : "Have an account? "}

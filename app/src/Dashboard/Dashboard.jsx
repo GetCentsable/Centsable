@@ -1,3 +1,4 @@
+import React, { useContext } from 'react';
 import NavBar from '../Navigation/NavBar';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
@@ -7,18 +8,15 @@ import Donations from './Donations';
 import Accounts from './Accounts';
 
 
-const Dashboard = ({ userUsername, signOut, userEmail }) => {
+const Dashboard = () => {
   return (
     <Router>
       <div className="sideNavBar">
-        <NavBar
-          userUsername={userUsername}
-          signOut={signOut}
-          userEmail={userEmail}
-        />
+        <NavBar />
       </div>
       <main>
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/discover" element={<Discover />} />
           <Route path="/donations" element={<Donations />} />

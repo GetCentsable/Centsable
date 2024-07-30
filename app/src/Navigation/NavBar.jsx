@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { faHome, faHistory, faWallet, faSearch, faArrowRightFromBracket, faForwardStep } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from '../Components/General/Button';
 import UserDrawer from '../Components/General/UserDrawer';
 import { Link, useLocation } from 'react-router-dom';
+import UserContext from '../Context/UserContext';
+import { app } from '../Firebase/firebase';
+import { getAuth, signOut } from 'firebase/auth';
 
-const NavBar = ({ userUsername, signOut, userEmail }) => {
+const NavBar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [selectedItem, setSelectedItem] = useState('Home');
   const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
+  const { user, setUser, setIsLoggedIn } = useContext(UserContext);
+
+  // Create instance of firebase auth
+  const auth = getAuth(app);
 
   const toggleNavBar = () => {
     setIsOpen(!isOpen);
@@ -17,6 +24,19 @@ const NavBar = ({ userUsername, signOut, userEmail }) => {
   const toggleUserDrawer = () => {
     setIsUserDrawerOpen(!isUserDrawerOpen);
   };
+
+  const handleSignOut = async (e) => {
+    e.preventDefault();
+    try {
+      await signOut(auth);
+      setUser(null);
+      setIsLoggedIn(false);
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('loginTimestamp');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  }
 
   const navItems = [
     { icon: faHome, title: 'Home' },
@@ -83,14 +103,14 @@ const NavBar = ({ userUsername, signOut, userEmail }) => {
               <img src="https://picsum.photos/100/100" alt="User avatar" className="w-10 h-10 rounded-full" />
               {isOpen && (
                 <div className="ml-3">
-                  <p className="text-neutral-200 font-semibold">{userUsername}</p>
-                  <p className="text-neutral-400 text-sm">{userEmail}</p> 
+                  {/* <p className="text-neutral-200 font-semibold">{userUsername}</p> */}
+                  <p className="text-neutral-400 text-sm">{user.email}</p> 
                 </div>
               )}
             </div>
             {isOpen && (
               <button
-                onClick={signOut}
+                onClick={handleSignOut}
                 className="text-red-400 hover:text-red-500 cursor-pointer bg-transparent border-none p-0"
               >
                 <FontAwesomeIcon
@@ -102,7 +122,7 @@ const NavBar = ({ userUsername, signOut, userEmail }) => {
           </div>
         </div>
         <UserDrawer
-          userUsername={userUsername}
+          // userUsername={userUsername}
           isOpen={isUserDrawerOpen}
           onClose={toggleUserDrawer}
         />
