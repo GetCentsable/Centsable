@@ -3,17 +3,20 @@ import Dashboard from '../Dashboard/Dashboard.jsx'
 import Landing from '../Landing/Landing.jsx'
 import UserContext from '../Context/UserContext.jsx';
 import { app } from '../Firebase/firebase';
-import { getAuth, signOut } from 'firebase/auth';
+import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 function App() {
-  const { isLoggedIn, setIsLoggedIn, setUser } = useContext(UserContext);
+  const { isLoggedIn, setIsLoggedIn, user, setUser } = useContext(UserContext);
 
   // Create instance of firebase auth
   const auth = getAuth(app);
 
+  // Instantiate the db with Firestore
+  const db = getFirestore(app);
+
   useEffect(() => {
-    // Async function checks for elapsed time and logs user
-    // out after 1 hour
+    // Async function checks for elapsed time and logs user out after 1 hour
     const checkLoginSession = async () => {
       // Check if user is already logged in and session is valid
       const loginTimestamp = localStorage.getItem('loginTimestamp');
@@ -24,10 +27,33 @@ function App() {
         // User login timestamp valid for 1 hour
         if (elapsedHours < 1) {
           // Session is still valid
-          setIsLoggedIn(true);
+          // Retrieve the authenticated user
+          onAuthStateChanged(auth, async (currentUser) => {
+            if (currentUser) {
+              const uid = currentUser.uid;
+              const userDocRef = doc(db, 'users', uid);
+              const userDocSnap = await getDoc(userDocRef);
+
+              // Check if document exists
+              if (userDocSnap.exists()) {
+                // Extract the user data from the document snapshot
+                const userData = userDocSnap.data();
+                // Merge the user data from snapshot with user object
+                const userWithDocData = { ...currentUser, ...userData };
+                // Add the user object with additional data to the userContext
+                setUser(userWithDocData);
+              } else {
+                console.error('User document does not exist');
+              }
+              setIsLoggedIn(true);
+            } else {
+              setIsLoggedIn(false);
+              setUser(null);
+              localStorage.removeItem('loginTimestamp');
+            }
+          });
         } else {
           // Session has expired, log out the user
-          // Sign out with firebase auth
           await signOut(auth);
           setIsLoggedIn(false);
           setUser(null);
@@ -37,7 +63,7 @@ function App() {
     };
 
     checkLoginSession();
-  }, [auth, setIsLoggedIn, setUser]);
+  }, [auth, db, setIsLoggedIn, setUser]);
 
   return (
     <>
