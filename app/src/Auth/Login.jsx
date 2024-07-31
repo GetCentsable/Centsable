@@ -48,7 +48,7 @@ const Login = () => {
         // Merge the user data from snapshot with user object
         // that is returned by firebase/auth
         const userWithDocData = { ...user, ...userData };
-        console.log(userWithDocData);
+        // console.log(userWithDocData);
         // Add the user object with additional data to the userContext
         // for global access
         setUser(userWithDocData);

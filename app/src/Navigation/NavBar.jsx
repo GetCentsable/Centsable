@@ -1,9 +1,9 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { faHome, faHistory, faWallet, faSearch, faArrowRightFromBracket, faForwardStep } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from '../Components/General/Button';
 import UserDrawer from '../Components/General/UserDrawer';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import UserContext from '../Context/UserContext';
 import { app } from '../Firebase/firebase';
 import { getAuth, signOut } from 'firebase/auth';
@@ -15,6 +15,14 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
   // Create instance of firebase auth
   const auth = getAuth(app);
 
+  // Initialize the useNavigate hook
+  const navigate = useNavigate();
+
+  // On component mount, navigate home(i.e. when user refreshes)
+  useEffect(() => {
+    navigate('/');
+  }, [])
+
   const handleSignOut = async (e) => {
     e.preventDefault();
     try {
@@ -24,6 +32,9 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
       setIsLoggedIn(false);
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('loginTimestamp');
+
+      // Navigate to default '/' path after sign out
+      navigate('/');
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -95,7 +106,7 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
               {isOpen && user && (
                 <div className="ml-3">
                   <p className="text-neutral-200 font-semibold">{user.username}</p>
-                  <p className="text-neutral-400 text-sm">{user.email}</p>
+                  <p className="text-neutral-400 text-xs">{user.email}</p>
                 </div>
               )}
             </div>

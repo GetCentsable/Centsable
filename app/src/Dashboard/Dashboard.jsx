@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import NavBar from '../Navigation/NavBar';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Home from './Home';
 import Discover from './Discover';
 import Donations from './Donations';
