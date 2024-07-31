@@ -3,7 +3,7 @@ import Auth from '../Auth/Auth.jsx';
 import Button from '../Components/General/SimpleButton.jsx';
 import logo from '../assets/logo.png';
 
-function Landing({ isLoggedIn, setIsLoggedIn}) {
+function Landing() {
   const [signUp, setSignUp] = useState(false);
   const [login, setLogin] = useState(false);
 
@@ -23,8 +23,6 @@ function Landing({ isLoggedIn, setIsLoggedIn}) {
     <>
       {(signUp || login) ?
           <Auth
-          isLoggedIn={isLoggedIn}
-          setIsLoggedIn={setIsLoggedIn}
           signUp={signUp}
           setSignUp={setSignUp}
           login={login}

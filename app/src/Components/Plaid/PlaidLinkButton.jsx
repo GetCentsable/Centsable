@@ -1,41 +1,62 @@
 import React, { useContext, useCallback } from "react";
 import PlaidContext from "../../Context/PlaidContext.jsx";
+import UserContext from "../../Context/UserContext.jsx";
+import SimpleButton from "../General/SimpleButton.jsx";
 
 const PlaidLinkButton = () => {
-  const { linkSuccess, isItemAccess, isPaymentInitiation, dispatch } = useContext(PlaidContext);
+  const { linkSuccess, isItemAccess, dispatch } = useContext(PlaidContext);
+  const { user } = useContext(UserContext);
 
   const generateToken = useCallback(
     // Step 1: Send request back end to generate link token
-    async (isPaymentInitiation) => {
-      // Link tokens for 'payment_initiation' use a different creation flow in your backend.
-      const path = isPaymentInitiation
-        ? "/centsable/create_link_token_for_payment"
-        : "/centsable/create_link_token";
-      const response = await fetch(path, {
-        method: "POST",
-      });
-      if (!response.ok) {
-        dispatch({ type: "SET_STATE", state: { linkToken: null } });
-        return;
-      }
-      const data = await response.json();
-      if (data) {
-        if (data.error != null) {
-          dispatch({
-            type: "SET_STATE",
-            state: {
-              linkToken: null,
-              linkTokenError: data.error,
-            },
-          });
+    async () => {
+      // Path to firebase function, requires authorization verification
+      const path = '';
+
+      // Getting id token for authorized user to send as bearer token
+      if (user) {
+        const idToken = await user.getIdToken();
+        // Fetch call to getPlaidLinkToken function,
+        // sending bearer token for authorization
+        const response = await fetch(path, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+          }
+        });
+
+        // If request failed, set linkToken state to null and return
+        if (!response.ok) {
+          dispatch({ type: "SET_STATE", state: { linkToken: null } });
           return;
         }
-        dispatch({ type: "SET_STATE", state: { linkToken: data.link_token } });
+
+        // Check the data and make sure there are no errors
+        const data = await response.json();
+        if (data) {
+          if (data.error != null) {
+            dispatch({
+              type: "SET_STATE",
+              state: {
+                linkToken: null,
+                linkTokenError: data.error,
+              },
+            });
+            return;
+          }
+          // If there are no errors and data has the link token
+          // set linkToken state in context to the returned linkToken
+          dispatch({ type: "SET_STATE", state: { linkToken: data.link_token } });
+        }
+        // Save the link_token to be used later in the Oauth flow
+        // for future google or apple authentication
+        localStorage.setItem("link_token", data.link_token);
+      } else {
+        console.error('User not signed in or bad request for link token');
       }
-      // Save the link_token to be used later in the Oauth flow.
-      localStorage.setItem("link_token", data.link_token);
     },
-    [dispatch]
+    [dispatch, user]
   );
 
   const updateLinkSuccess = () => {
@@ -52,21 +73,23 @@ const PlaidLinkButton = () => {
     });
   };
 
-  const handleClick = async () => {
-    // Determine paymentInitiation directly or from another source
-    const paymentInitiation = isPaymentInitiation; // Default value false or another method to determine this
-  
+  const handleClick = async (e) => {
     // Update state and generate token
+    e.preventDefault;
     updateIsItemAccess();
     updateLinkSuccess();
-    await generateToken(paymentInitiation);
+    await generateToken();
   }
 
   return (
     <div>
       <p>Link Success: {linkSuccess.toString()}</p>
       <p>Item Access: {isItemAccess.toString()}</p>
-      <button onClick={handleClick}>Link your account</button>
+      <SimpleButton
+        title='Link your Bank'
+        className='w-30'
+        onClick={handleClick}
+      />
     </div>
   );
 };
