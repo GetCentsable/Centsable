@@ -5,14 +5,9 @@ import Button from '../Components/General/Button';
 import UserDrawer from '../Components/General/UserDrawer';
 import { Link, useLocation } from 'react-router-dom';
 
-const NavBar = ({ userUsername, signOut, userEmail }) => {
-  const [isOpen, setIsOpen] = useState(true);
+const NavBar = ({ userUsername, signOut, userEmail, isOpen, toggleNavBar }) => {
   const [selectedItem, setSelectedItem] = useState('Home');
   const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
-
-  const toggleNavBar = () => {
-    setIsOpen(!isOpen);
-  };
 
   const toggleUserDrawer = () => {
     setIsUserDrawerOpen(!isUserDrawerOpen);
