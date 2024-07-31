@@ -17,13 +17,9 @@ const NavBar = () => {
   // Create instance of firebase auth
   const auth = getAuth(app);
 
-  const toggleNavBar = () => {
-    setIsOpen(!isOpen);
-  };
-
   const toggleUserDrawer = () => {
     setIsUserDrawerOpen(!isUserDrawerOpen);
-    console.log('User name is:', user.username);
+    // console.log('User name is:', user.username);
   };
 
   const handleSignOut = async (e) => {

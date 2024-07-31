@@ -24,7 +24,7 @@ const Dashboard = () => {
         </Routes>
       </main>
     </Router>
-  )
+  );
 };
 
 export default Dashboard;
