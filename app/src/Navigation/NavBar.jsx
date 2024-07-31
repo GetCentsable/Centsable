@@ -8,19 +8,12 @@ import UserContext from '../Context/UserContext';
 import { app } from '../Firebase/firebase';
 import { getAuth, signOut } from 'firebase/auth';
 
-const NavBar = () => {
-  const [isOpen, setIsOpen] = useState(true);
+const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) => {
   const [selectedItem, setSelectedItem] = useState('Home');
-  const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
   const { user, setUser, setIsLoggedIn } = useContext(UserContext);
 
   // Create instance of firebase auth
   const auth = getAuth(app);
-
-  const toggleUserDrawer = () => {
-    setIsUserDrawerOpen(!isUserDrawerOpen);
-    // console.log('User name is:', user.username);
-  };
 
   const handleSignOut = async (e) => {
     e.preventDefault();
