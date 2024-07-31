@@ -8,8 +8,7 @@ import UserContext from '../Context/UserContext';
 import { app } from '../Firebase/firebase';
 import { getAuth, signOut } from 'firebase/auth';
 
-const NavBar = ({ signOut, isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) => {
-  const [isOpen, setIsOpen] = useState(true);
+const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) => {
   const [selectedItem, setSelectedItem] = useState('Home');
   const { user, setUser, setIsLoggedIn } = useContext(UserContext);
 
