@@ -1,5 +1,4 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import Header from '../Components/General/Header';
+import AccountHeader from '../Components/General/AccountHeader';
 import Card from '../Components/General/Card';
 
 const Accounts = () => {
@@ -14,10 +13,9 @@ const Accounts = () => {
 
   return (
     <div className="p-6">
-      <Header
+      <AccountHeader
         pageTopic="All Accounts"
         supportingText="Manage your contribution accounts"
-        icon={faPlus}
         buttonText="Add account"
       />
       <div className="pt-14 max-w-7xl mx-auto">
