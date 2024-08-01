@@ -1,4 +1,5 @@
 import Header from '../Components/General/Header';
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 
 
 const HomePage = () => {
@@ -6,7 +7,7 @@ const HomePage = () => {
     <div className="p-6">
       <Header 
         pageTopic="Your Impact"
-        icon="plus"
+        icon={faMagnifyingGlass}
         buttonText="View All"
       />
     </div>
