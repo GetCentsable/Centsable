@@ -6,7 +6,7 @@ const UserDrawer = ({ userUsername, isOpen, onClose }) => {
     <div 
       className={`fixed top-0 right-0 h-screen bg-red-400 transition-all duration-300 ${
         isOpen ? 'w-80' : 'w-0'
-      } flex flex-col overflow-hidden`}
+      } flex flex-col overflow-hidden z-50`}
     >
       <div className="flex-grow p-4">
         <div className="flex items-center mb-6">
