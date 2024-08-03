@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Auth from '../Auth/Auth.jsx';
 import Button from '../Components/General/SimpleButton.jsx';
 import logo from '../assets/logo.png';
+import TypeWriter from '../Components/General/TypeWriter.jsx';
 
-function Landing({ isLoggedIn, setIsLoggedIn}) {
+function Landing() {
   const [signUp, setSignUp] = useState(false);
   const [login, setLogin] = useState(false);
 
@@ -19,12 +20,23 @@ function Landing({ isLoggedIn, setIsLoggedIn}) {
     setSignUp(true);
   }
 
+  const typewriterPhrases = [
+    "donate to charities",
+    "aid disaster relief",
+    "support an artist",
+    "help animal shelters",
+    "fund medical research",
+    "support local events",
+    "save for a vacation",
+    "support a streamer",
+    "fund community projects",
+    "help small businesses"
+  ];
+
   return (
     <>
       {(signUp || login) ?
           <Auth
-          isLoggedIn={isLoggedIn}
-          setIsLoggedIn={setIsLoggedIn}
           signUp={signUp}
           setSignUp={setSignUp}
           login={login}
@@ -39,8 +51,9 @@ function Landing({ isLoggedIn, setIsLoggedIn}) {
           </div>
           <div className='body-container mx-auto flex flex-col mt-24 w-2/3'>
             <img src={logo} alt='centsable-logo' className='mx-auto'></img>
-            <Button title='Sign Up' onClick={handleSignUp} className='w-auto self-center mt-12 text-5xl py-4 px-28'></Button>
-            <p className='text-black mt-20 text-4xl font-bold'>Use Centsable to...</p>
+            <Button title='Sign Up' onClick={handleSignUp} className='shadow-xl w-auto self-center mt-12 text-5xl py-4 px-28'></Button>
+            <p className='text-slate-700 mt-36 text-4xl font-bold mx-auto'>Use Centsable to</p>
+            <p className='text-slate-700 mt-1 text-3xl font-bold mx-auto'><TypeWriter phrases={typewriterPhrases} /></p>
           </div>
         </div>
       }

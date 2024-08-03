@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import Button from '../Components/General/SimpleButton.jsx';
 import Input from '../Components/General/Input';
 import { app } from '../Firebase/firebase.js';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import UserContext from '../Context/UserContext.jsx';
 import loadingPig from '../assets/loading.gif';
 
 const Register = ({ setLogin, setSignUp }) => {
@@ -15,6 +16,7 @@ const Register = ({ setLogin, setSignUp }) => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [failed, setFailed] = useState(false);
+  const { setUser, setIsLoggedIn } = useContext(UserContext);
 
   // Instantiate the auth service SDK
   const auth = getAuth(app);
@@ -41,30 +43,10 @@ const Register = ({ setLogin, setSignUp }) => {
         const user = userCredential.user;
         // console.log(user);
 
-        const uid = userCredential.user.uid;
-        const signupPost = {
-            email: email,
-            uid: uid
-        }
-        // try {
-        //   fetch(signupUrl, {
-        //       method: 'POST',
-        //       headers: { "Content-Type": "application/json" },
-        //       body: JSON.stringify(signupPost)
-        //   })
-        // } catch (error) {
-        //   console.log('FAILED');
-        //   console.log(error);
-        //   setError(error.message);
-        //   setTimeout(() => {
-        //     setLoading(false);
-        //   }, 1000)
-        //   setFailed(true);
-        //   setTimeout(() => {
-        //       setFailed(false);
-        //       setIsSubmit(false);
-        //   }, 3000)
-        // }
+        // Save additional user info in Auth
+        await updateProfile(user, {
+          displayName: username,
+        });
 
         setTimeout(() => {
             setLoading(false);
@@ -72,8 +54,16 @@ const Register = ({ setLogin, setSignUp }) => {
         }, 1600)
         setTimeout(() => {
             setSuccess(false);
-            setLogin(true);
+            setLogin(false);
             setSignUp(false);
+
+            // Store login timestamp in local storage
+            localStorage.setItem('loginTimestamp', new Date().getTime());
+            
+            // Add the user object into the userContext for global access
+            // and set log it to true to switch to dashboard
+            setUser(user);
+            setIsLoggedIn(true);
         }, 3000)
       } catch (error) {
         console.log('FAILED');
@@ -85,7 +75,6 @@ const Register = ({ setLogin, setSignUp }) => {
         setFailed(true);
         setTimeout(() => {
             setFailed(false);
-            setIsSubmit(false);
         }, 3000)
       }
     }

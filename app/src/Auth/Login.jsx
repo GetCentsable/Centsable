@@ -1,62 +1,45 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Button from '../Components/General/SimpleButton.jsx';
 import Input from '../Components/General/Input';
 import { app } from '../Firebase/firebase.js';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import UserContext from '../Context/UserContext.jsx';
 
-const Login = ({ setIsLoggedIn }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [failed, setFailed] = useState(false);
+  const { setUser, setIsLoggedIn } = useContext(UserContext);
 
   // Instantiate the auth service SDK
   const auth = getAuth(app);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt with:', email, password);
+    // console.log('Login attempt with:', email, password);
     try {
       // Sign in with email and password in firebase auth service
-      console.log('Sending auth login request');
+      // console.log('Sending auth login request');
       const userCredential = await signInWithEmailAndPassword(
           auth,
           email,
           password
       );
-      console.log('Auth login request complete');
+      // console.log('Auth login request complete');
 
       // The signed-in user object returned by firebase auth
       const user = userCredential.user;
       // console.log(user);
+      setUser(user);
 
-      const uid = userCredential.user.uid;
-      const loginPost = {
-          email: email,
-          uid: uid
-      }
-      // try {
-      //     fetch(loginUrl, {
-      //         method: 'POST',
-      //         headers: { "Content-Type": "application/json" },
-      //         body: JSON.stringify(loginPost)
-      //     })
-      //     .then(res => res.json())
-      //     .then((data) =>{
-      //         console.log(data);
-      //     })
-      // } catch (error) {
-      //     console.log('FAILED TO SIGNIN');
-      //     console.log(error);
-      // }
-
-      // Store logged-in state and login timestamp in local storage
-      localStorage.setItem('isLoggedIn', true);
+      // Store login timestamp in local storage
       localStorage.setItem('loginTimestamp', new Date().getTime());
+      console.log('Login timestamp set on login!')
 
       setIsLoggedIn(true);
     } catch (err) {
-        // Handle Errors here.
+        // Handle Errors here
         const errorMessage = err.message;
         setError(errorMessage);
         setFailed(true);
