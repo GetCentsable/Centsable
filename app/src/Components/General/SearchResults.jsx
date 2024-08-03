@@ -85,7 +85,9 @@ const SearchResults = ({ results }) => {
         {currentItems.map((item) => (
           <div key={item.id} className="p-4 border-b">
             <h3 className="font-bold">{item.header}</h3>
-            <p>{item.description}</p>
+            <p>Description: {item.description}</p>
+            <a>Website: {item.website}</a>
+            <p>Category: {item.category}</p>
           </div>
         ))}
       </div>
