@@ -48,7 +48,7 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
 
   const navItems = [
     { icon: faHome, title: 'Home' },
-    { icon: faSearch, title: 'Discover' },
+    { icon: faSearch, title: 'Search' },
     { icon: faHistory, title: 'Donations' },
     { icon: faWallet, title: 'Accounts' }
   ];

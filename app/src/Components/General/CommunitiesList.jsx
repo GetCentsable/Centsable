@@ -1,5 +1,3 @@
-import React from 'react';
-
 const CommunitiesList = ({ communities }) => {
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#66D7D1', '#F7FFF7', '#FFE66D'];
 
