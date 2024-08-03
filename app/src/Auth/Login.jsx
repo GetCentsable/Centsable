@@ -35,7 +35,7 @@ const Login = () => {
 
       // Store login timestamp in local storage
       localStorage.setItem('loginTimestamp', new Date().getTime());
-      console.log('Login timestamp set on login!')
+      // console.log('Login timestamp set on login!')
 
       setIsLoggedIn(true);
     } catch (err) {
