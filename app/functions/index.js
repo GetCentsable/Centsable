@@ -23,6 +23,7 @@ const logger = require("firebase-functions/logger");
 // Import the functions from the other files
 const { signup, signin, verifyToken, verifyEmail, resetPassword, updatePassword, signout} = require('./authenticationFunctions');
 const { createLinkToken } = require('./plaidFunctions');
+const { createPaymentIntent } = require('./stripeFunctions');
 
 // Export the authentication functions
 // exports.signup = signup;
@@ -35,3 +36,6 @@ const { createLinkToken } = require('./plaidFunctions');
 
 // Export Plaid functions for API request
 exports.createLinkToken = createLinkToken;
+
+// Export the stripe functions
+exports.createPaymentIntent = createPaymentIntent;
