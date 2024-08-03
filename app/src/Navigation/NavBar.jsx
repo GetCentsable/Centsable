@@ -11,7 +11,6 @@ import { getAuth, signOut } from 'firebase/auth';
 const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) => {
   const [selectedItem, setSelectedItem] = useState('Home');
   const { user, setUser, setIsLoggedIn } = useContext(UserContext);
-  console.log('Username is:',user.username);
 
   // Create instance of firebase auth
   const auth = getAuth(app);
@@ -26,7 +25,7 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
 
   // Rerender when user object changes to get username
   useEffect(() => {
-    console.log('Username is:',user.username);
+    // console.log('Username is:',user.username);
   }, [user])
 
   const handleSignOut = async (e) => {
@@ -48,7 +47,7 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
 
   const navItems = [
     { icon: faHome, title: 'Home' },
-    { icon: faSearch, title: 'Discover' },
+    { icon: faSearch, title: 'Search' },
     { icon: faHistory, title: 'Donations' },
     { icon: faWallet, title: 'Accounts' }
   ];
@@ -111,7 +110,7 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
               <img src="https://picsum.photos/100/100" alt="User avatar" className="w-10 h-10 rounded-full" />
               {isOpen && user && (
                 <div className="ml-3">
-                  <p className="text-neutral-200 font-semibold">{user.username}</p>
+                  <p className="text-neutral-200 font-semibold">{user.displayName}</p>
                   <p className="text-neutral-400 text-xs">{user.email}</p>
                 </div>
               )}

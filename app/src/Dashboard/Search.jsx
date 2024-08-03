@@ -4,7 +4,7 @@ import QuickFilter from '../Components/General/QuickFilter';
 import SearchResults from '../Components/General/SearchResults';
 import { faMusic, faHandHoldingHeart, faVideo, faBuilding, faGamepad, faPodcast } from '@fortawesome/free-solid-svg-icons';
 
-const Discover = ({ isUserDrawerOpen }) => {
+const Search = ({ isUserDrawerOpen }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -40,7 +40,7 @@ const Discover = ({ isUserDrawerOpen }) => {
 
   return (
     <div className={`flex flex-col items-center ${isSearching ? 'pt-20' : 'pt-60'} min-h-screen p-4 transition-all duration-300`}>
-      {!isSearching && <h1 className="text-3xl font-bold mb-8">Change what matters most</h1>}
+      {!isSearching && <h1 className="text-3xl font-bold mb-8">Find Your Cause</h1>}
       <SearchBar
         searchValue={searchValue}
         setSearchValue={handleSearch}
@@ -54,4 +54,4 @@ const Discover = ({ isUserDrawerOpen }) => {
   );
 };
 
-export default Discover;
+export default Search;
