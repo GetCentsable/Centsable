@@ -1,15 +1,15 @@
+import Header from '../Components/General/Header';
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+
+
 const HomePage = () => {
   return (
-    <div>
-      <div className="impact-section">
-        <h1 className="text-center">Impact</h1>
-      </div>
-      <div className="contributions-section">
-        <h1 className="text-center">Contributions</h1>
-      </div>
-      <div className="discover-section">
-        <h1 className="text-center">Discover</h1>
-      </div>
+    <div className="p-6">
+      <Header 
+        pageTopic="Your Impact"
+        icon={faMagnifyingGlass}
+        buttonText="View All"
+      />
     </div>
   );
 };
