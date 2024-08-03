@@ -4,7 +4,7 @@ import QuickFilter from '../Components/General/QuickFilter';
 import SearchResults from '../Components/General/SearchResults';
 import { faMusic, faHandHoldingHeart, faVideo, faBuilding, faGamepad, faPodcast } from '@fortawesome/free-solid-svg-icons';
 
-const Discover = () => {
+const Discover = ({ isUserDrawerOpen }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -46,6 +46,7 @@ const Discover = () => {
         setSearchValue={handleSearch}
         onClear={handleClearSearch}
         isSearching={isSearching}
+        isUserDrawerOpen={isUserDrawerOpen}
       />
       {!isSearching && <QuickFilter filters={filters} setSearchValue={handleSearch} />}
       {isSearching && <SearchResults results={searchResults} />}

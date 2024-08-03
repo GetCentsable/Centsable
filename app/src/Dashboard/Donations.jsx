@@ -5,7 +5,7 @@ import PieChart from '../Components/General/PieChart';
 import CommunitiesList from '../Components/General/CommunitiesList';
 import Header from '../Components/General/Header';
 
-const Donations = () => {
+const Donations = ({ isUserDrawerOpen }) => {
   const [selectedDate, setSelectedDate] = useState(null);
 
   // Placeholder data - replace with data
@@ -45,6 +45,7 @@ const Donations = () => {
         supportingText="Track your recent contributions"
         icon={faFilter}
         buttonText="Apply filter"
+        isUserDrawerOpen={isUserDrawerOpen}
       />
       <div className="grid grid-cols-3 gap-6">
         {/* Left Column - Report */}
