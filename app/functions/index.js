@@ -22,12 +22,16 @@ const logger = require("firebase-functions/logger");
 
 // Import the functions from the other files
 const { signup, signin, verifyToken, verifyEmail, resetPassword, updatePassword, signout} = require('./authenticationFunctions');
+const { createLinkToken } = require('./plaidFunctions');
 
-// Export the authentication functions to be used
-exports.signup = signup;
-exports.signin = signin;
-exports.verifyToken = verifyToken;
-exports.verifyEmail = verifyEmail;
-exports.resetPassword = resetPassword;
-exports.updatePassword = updatePassword;
-exports.signout = signout;
+// Export the authentication functions
+// exports.signup = signup;
+// exports.signin = signin;
+// exports.verifyToken = verifyToken;
+// exports.verifyEmail = verifyEmail;
+// exports.resetPassword = resetPassword;
+// exports.updatePassword = updatePassword;
+// exports.signout = signout;
+
+// Export Plaid functions for API request
+exports.createLinkToken = createLinkToken;

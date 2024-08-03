@@ -4,9 +4,8 @@ import React, { createContext, useReducer } from "react";
 const initialState = {
   linkSuccess: false,
   isItemAccess: true,
-  isPaymentInitiation: false,
   linkToken: "",
-  accessToken: null,
+  linkTokenRetrieved: false,
   itemId: null,
   isError: false,
   backend: true,

@@ -11,6 +11,7 @@ import { getAuth, signOut } from 'firebase/auth';
 const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) => {
   const [selectedItem, setSelectedItem] = useState('Home');
   const { user, setUser, setIsLoggedIn } = useContext(UserContext);
+  console.log('Username is:',user.username);
 
   // Create instance of firebase auth
   const auth = getAuth(app);
@@ -22,6 +23,11 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
   useEffect(() => {
     navigate('/');
   }, [])
+
+  // Rerender when user object changes to get username
+  useEffect(() => {
+    console.log('Username is:',user.username);
+  }, [user])
 
   const handleSignOut = async (e) => {
     e.preventDefault();
