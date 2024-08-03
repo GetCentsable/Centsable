@@ -3,7 +3,6 @@ import Button from '../Components/General/SimpleButton.jsx';
 import Input from '../Components/General/Input';
 import { app } from '../Firebase/firebase.js';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import UserContext from '../Context/UserContext.jsx';
 
 const Login = () => {
@@ -16,48 +15,27 @@ const Login = () => {
   // Instantiate the auth service SDK
   const auth = getAuth(app);
 
-  // Instantiate the db with Firestore
-  const db = getFirestore(app);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     // console.log('Login attempt with:', email, password);
     try {
       // Sign in with email and password in firebase auth service
-      console.log('Sending auth login request');
+      // console.log('Sending auth login request');
       const userCredential = await signInWithEmailAndPassword(
           auth,
           email,
           password
       );
-      console.log('Auth login request complete');
+      // console.log('Auth login request complete');
 
       // The signed-in user object returned by firebase auth
       const user = userCredential.user;
       // console.log(user);
-
-      // Retrieve additional user info from Firestore
-      const uid = userCredential.user.uid;
-      const userDocRef = doc(db, 'users', uid);
-      const userDocSnap = await getDoc(userDocRef);
-
-      // Check if document exist
-      if (userDocSnap.exists()) {
-        // Extract the user data from the document snapshot
-        const userData = userDocSnap.data();
-        // Merge the user data from snapshot with user object
-        // that is returned by firebase/auth
-        const userWithDocData = { ...user, ...userData };
-        // console.log(userWithDocData);
-        // Add the user object with additional data to the userContext
-        // for global access
-        setUser(userWithDocData);
-      } else {
-        console.error('User document does not exist');
-      }
+      setUser(user);
 
       // Store login timestamp in local storage
       localStorage.setItem('loginTimestamp', new Date().getTime());
+      console.log('Login timestamp set on login!')
 
       setIsLoggedIn(true);
     } catch (err) {
