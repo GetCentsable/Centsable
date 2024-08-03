@@ -3,6 +3,7 @@ import Button from '../Components/General/SimpleButton.jsx';
 import Input from '../Components/General/Input';
 import { app } from '../Firebase/firebase.js';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import UserContext from '../Context/UserContext.jsx';
 import loadingPig from '../assets/loading.gif';
 
@@ -20,6 +21,9 @@ const Register = ({ setLogin, setSignUp }) => {
 
   // Instantiate the auth service SDK
   const auth = getAuth(app);
+
+  // Instantiate the db with Firestore
+  const db = getFirestore(app);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,9 +52,24 @@ const Register = ({ setLogin, setSignUp }) => {
           displayName: username,
         });
 
+        // Get current time to store user created in firestore
+        const created_at = new Date().getTime();
+
+        // Save additional user info in Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          username: username,
+          email: email,
+          admin: false,
+          created_at: created_at,
+          updated_at: created_at,
+          monthly_max: null,
+        });
+
         setTimeout(() => {
             setLoading(false);
             setSuccess(true);
+            // Add the user object into the userContext for global access
+            setUser(user);
         }, 1600)
         setTimeout(() => {
             setSuccess(false);
@@ -60,9 +79,7 @@ const Register = ({ setLogin, setSignUp }) => {
             // Store login timestamp in local storage
             localStorage.setItem('loginTimestamp', new Date().getTime());
             
-            // Add the user object into the userContext for global access
-            // and set log it to true to switch to dashboard
-            setUser(user);
+            // Set log it to true to switch to dashboard
             setIsLoggedIn(true);
         }, 3000)
       } catch (error) {
