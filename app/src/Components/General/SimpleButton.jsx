@@ -10,10 +10,9 @@ const SimpleButton = ({ title, type, icon, onClick, className, optionalAttribute
       type={type}
       className={twMerge(baseClasses, className)}
       onClick={(e) => onClick(e)}
-      icon={icon}
       {...optionalAttributes}
     >
-      <FontAwesomeIcon icon={icon} className='mr-2' />
+      {icon && <FontAwesomeIcon icon={icon} className='mr-2' />}
       {title}
     </button>
   );

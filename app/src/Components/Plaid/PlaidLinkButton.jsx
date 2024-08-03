@@ -84,7 +84,7 @@ const PlaidLinkButton = () => {
       } catch (error) {
         console.error('Error fetching link token:', error);
         if(linkTokenError) {
-          console.log('Link Token Error:', linkTokenError);
+          console.log('Link Token Error:', linkTokenError, error);
         }
       }
     },
