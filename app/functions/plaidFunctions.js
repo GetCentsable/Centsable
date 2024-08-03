@@ -25,6 +25,7 @@ const plaidClient = new PlaidApi(configuration);
 // Middleware to verify Firebase ID tokens
 const authenticate = async (req, res, next) => {
   if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+    console.error('Unauthorized: No Bearer token');
     return res.status(403).send('Unauthorized');
   }
 
@@ -35,6 +36,7 @@ const authenticate = async (req, res, next) => {
     req.user = decodedToken;
     next();
   } catch (error) {
+    console.error('Unauthorized: Invalid token', error);
     return res.status(403).send('Unauthorized');
   }
 };
@@ -47,19 +49,21 @@ exports.createLinkToken = functions.https.onRequest((req, res) => {
     try {
       await authenticate(req, res, async () => {
         try {
+          console.log('Creating link token for user:', req.user.uid);
           const response = await plaidClient.linkTokenCreate({
             user: {
               client_user_id: req.user.uid,
             },
             client_name: 'Centsable',
-            products: [Products.Auth, Products.Transactions, Products.Balance, Products.Identity],
+            products: [Products.Auth, Products.Transactions, Products.Identity],
             country_codes: ['US'],
             language: 'en',
           });
+          console.log('Link token created:', response.data);
           res.status(200).send(response.data);
         } catch (error) {
-          console.error('Error creating link token:', error);
-          res.status(500).send(error);
+          console.error('Error creating link token:', error.response ? error.response.data : error.message);
+          res.status(500).send({ error: 'Error creating link token' });
         }
       });
     } catch (error) {
