@@ -3,7 +3,7 @@ import NavBar from '../Navigation/NavBar';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
 import Home from './Home';
-import Discover from './Discover';
+import Search from './Search';
 import Donations from './Donations';
 import Accounts from './Accounts';
 import UserDrawer from '../Components/General/UserDrawer';
@@ -33,7 +33,7 @@ const Dashboard = () => {
           <Routes>
             <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} />} />
             <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} />} />
-            <Route path="/discover" element={<Discover isUserDrawerOpen={isUserDrawerOpen} />} />
+            <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} />} />
             <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} />} />
             <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} />} />
           </Routes>
