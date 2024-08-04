@@ -24,6 +24,7 @@ const logger = require("firebase-functions/logger");
 const { signup, signin, verifyToken, verifyEmail, resetPassword, updatePassword, signout} = require('./authenticationFunctions');
 const { createLinkToken, exchangePublicToken } = require('./plaidFunctions');
 const { createPaymentIntent } = require('./stripeFunctions');
+const { transferDailyDonations, scheduleDailyTransfer} = require('./transferDailyDonations');
 
 // Export the authentication functions
 // exports.signup = signup;
@@ -40,3 +41,7 @@ exports.exchangePublicToken = exchangePublicToken;
 
 // Export the stripe functions
 exports.createPaymentIntent = createPaymentIntent;
+
+// Export the transaction ledger functions
+exports.transferDailyDonations = transferDailyDonations;
+exports.scheduleDailyTransfer = scheduleDailyTransfer;
