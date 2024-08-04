@@ -15,7 +15,7 @@ const transferDailyDonations = async (userId) => {
     }
 
     const userData = userDoc.data();
-    const holdingAccountRef = db.collection('bank_accounts').doc('Qz9dVjodzi7S8IAfIQdU');
+    const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
     const holdingAccountDoc = await holdingAccountRef.get();
     const holdingAccountData = holdingAccountDoc.data();
 
@@ -27,12 +27,14 @@ const transferDailyDonations = async (userId) => {
 
     if (transactionsDoc.exists) {
       const transactions = transactionsDoc.data();
-      for (const [transactionId, transaction] of Object.entries(transactions)) {
+      for (const transaction of Object.values(transactions)) {
         totalTransactionAmount += transaction.roundup_amount || 0;
       }
     }
 
     if (totalTransactionAmount > 0) {
+      const dailyTransferLog = [];
+
       for (const recipient of userData.recipients) {
         const recipientRef = db.collection('recipients').doc(recipient.recipient_id);
         const recipientDoc = await recipientRef.get();
@@ -51,12 +53,26 @@ const transferDailyDonations = async (userId) => {
             paid: admin.firestore.FieldValue.increment(transferAmount),
           });
 
-          // Log the transaction for the recipient
-          await logTransaction(userId, recipient.recipient_id, transferAmount, 'debit');
+          // Log the transaction in the daily transfer log
+          dailyTransferLog.push({
+            user_id: userId, // Include the user ID in the log
+            recipient_id: recipient.recipient_id,
+            recipient_name: recipient.recipient_name,
+            amount: transferAmount
+          });
 
-          console.log(`Transferred ${transferAmount} from holding account to ${recipient.recipient_name}`);
+          console.log(`Transferred ${transferAmount} from holding account to ${recipient.recipient_name} by user ${userId}`);
         }
       }
+
+      // Log the daily transfers in the holding account's sub-collection
+      const dailyLogRef = holdingAccountRef.collection('daily_transfers').doc(dateString);
+      await dailyLogRef.set({
+        date: today,
+        transfers: dailyTransferLog // Store all transfers with user IDs
+      });
+
+      console.log(`Daily transfer log created for user ${userId} on ${dateString}`);
     } else {
       console.log(`No transactions to process for user ${userId} on ${dateString}`);
     }
@@ -104,3 +120,4 @@ exports.scheduleDailyTransfer = functions.pubsub.schedule('2:00').timeZone('Amer
   console.log('Daily transfer job completed');
 });
 */
+
