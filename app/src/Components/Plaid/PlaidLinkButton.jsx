@@ -8,12 +8,10 @@ import { getAuth } from 'firebase/auth';
 import { app } from "../../Firebase/firebase.js";
 
 const PlaidLinkButton = () => {
-  const [linkWidget, setLinkWidget] = useState(false);
-  const { linkToken, 
-    linkTokenRetrieved,
+  const {
+    linkToken,
     linkSuccess,
     isItemAccess,
-    linkTokenError,
     dispatch
   } = useContext(PlaidContext);
   // const { user } = useContext(UserContext);
@@ -21,111 +19,67 @@ const PlaidLinkButton = () => {
   // Insantiate firebase auth
   const auth = getAuth(app);
 
-  const generateToken = useCallback(
-    // Step 1: Send request back end to generate link token
-    async () => {
-      // Path to firebase function, requires authorization verification
-      const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/createLinkToken';
+  // const onSuccess = () => {
+  //   console.log('SUUUUCCCESSSS!!!')
+  // }
 
-      // Getting current user object from firebase auth
-      const currentUser = auth.currentUser;
+  const onSuccess = useCallback(
+    (public_token) => {
+      // Step 4:
+      // On link success, send passed in public_token to server
+      // to exchange with Plaid API for access token
+      const exchangePublicTokenForAccessToken = async () => {
+        // Path to firbase function
+        const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/exchangePublicToken';
 
-      try {
-        if (currentUser) {
-          // Generate firebase user id token from current user
-          const idToken = await currentUser.getIdToken();
-          // console.log('IdToken', idToken);
+        // Debug logging
+        // console.log('Public token is:', public_token)
 
-          // Fetch call to getPlaidLinkToken function,
-          // sending bearer(id) token for authorization
-          const response = await fetch(path, {
-            method: "POST",
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${idToken}`,
-            }
-          });
+        try {
+          // Getting current user object from firebase auth
+          const currentUser = auth.currentUser;
+          const uid = currentUser.uid;
+  
+          if (currentUser) {
+            // Generate firebase user id token from current user
+            const idToken = await currentUser.getIdToken();
+            // console.log('IdToken', idToken);
 
-          // If request failed, set linkToken state to null and return
-          if (!response.ok) {
-            dispatch({ type: "SET_STATE", state: { linkToken: null } });
-            return;
-          }
+            // Fetch call to exchangePublicToken,
+            // Sending bearer(id) for auth
+            const response = await fetch(path, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`,
+              },
+              body: JSON.stringify({
+                public_token: public_token,
+                uid: uid
+              }),
+            });
 
-          // Check the data and make sure there are no errors and link token is present
-          const data = await response.json();
-          if (data) {
-            if (data.error != null) {
+            if (!response.ok) {
               dispatch({
                 type: "SET_STATE",
                 state: {
-                  linkToken: null,
-                  linkTokenError: data.error,
+                  itemId: `no item_id retrieved`,
+                  accessToken: `no access_token retrieved`,
+                  isItemAccess: false,
                 },
               });
               return;
+            } else if (response.ok) {
+              console.log('On success callback completed!');
             }
 
-            // Step 2.a
-            // If there are no errors and data has the link token
-            // set linkToken state in context to the returned linkToken
-            // and start next step using isLinkToken state
-            dispatch({ type: "SET_STATE", state: { linkToken: data.link_token } });
-            dispatch({ type: "SET_STATE", state: { linkTokenRetrieved: true } });
-            console.log('Link token from plaid api:', data);
           }
-
-          // Save the link_token to be used later in the Oauth flow
-          // for future google or apple authentication
-          localStorage.setItem("link_token", data.link_token);
-        } else {
-          console.error('User not signed in or bad request for link token');
+        } catch (err) {
+          console.error('There was an error exchanging access token:', err);
         }
-      } catch (error) {
-        console.error('Error fetching link token:', error);
-        if(linkTokenError) {
-          console.log('Link Token Error:', linkTokenError, error);
-        }
-      }
-    },
-    [dispatch]
-  );
-
-  const onSuccess = React.useCallback(
-    (public_token) => {
-      // If the access_token is needed, send public_token to server
-      const exchangePublicTokenForAccessToken = async () => {
-        const response = await fetch("/api/set_access_token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          },
-          body: `public_token=${public_token}`,
-        });
-        if (!response.ok) {
-          dispatch({
-            type: "SET_STATE",
-            state: {
-              itemId: `no item_id retrieved`,
-              accessToken: `no access_token retrieved`,
-              isItemAccess: false,
-            },
-          });
-          return;
-        }
-        const data = await response.json();
-        dispatch({
-          type: "SET_STATE",
-          state: {
-            itemId: data.item_id,
-            accessToken: data.access_token,
-            isItemAccess: true,
-          },
-        });
       };
 
       exchangePublicTokenForAccessToken();
-
 
       dispatch({ type: "SET_STATE", state: { linkSuccess: true } });
       window.history.pushState("", "", "/");
@@ -133,21 +87,9 @@ const PlaidLinkButton = () => {
     [dispatch]
   );
 
-  const updateLinkSuccess = () => {
-    dispatch({
-      type: "SET_STATE",
-      state: { linkSuccess: !linkSuccess }
-    });
-  };
-
-  const updateIsItemAccess = () => {
-    dispatch({
-      type: "SET_STATE",
-      state: { isItemAccess: !isItemAccess }
-    });
-  };
-
-  // Step 3: Calling usePlaidLink with the link token
+  // Step 3:
+  // Calling usePlaidLink with the link token
+  // First create a config to be passed into usePlaidLink
   const linkConfig = {
     token: linkToken,
     onSuccess
@@ -157,35 +99,30 @@ const PlaidLinkButton = () => {
   // destructure the ready boolean to check if link widget is
   // ready, and open function to launch link widget
   const { open, ready } = usePlaidLink(linkConfig);
-
-  // Use effect to check if link is ready to open
-  useEffect(() => {
-    console.log('Checking ready:', ready)
-    // If the link is ready, open the link widget
-    if (ready) {
-      open();
-    }
-  }, [ready]);
   
   const handleClick = async (e) => {
     // Update state and generate token
     e.preventDefault();
-    // updateIsItemAccess();
-    // updateLinkSuccess();
-    await generateToken();
+    // console.log('Link Button Clicked, Token is:', linkToken)
+    open();
+    console.log('OPEN CALLED, ready is:', ready)
   }
+
+  // useEffect(() => {
+  //   console.log('MOUNTED LINK TOKEN:', linkToken)
+  // }, [])
 
   return (
     <>
       <div>
         <SimpleButton
-          title='Link your Bank'
-          className='mt-2 px-4 py-3 text-md bg-red-400 text-neutral-100 rounded-lg'
+          title={`Add Another Account`}
+          className='mt-2 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg'
           onClick={handleClick}
+          disabled={!ready}
           icon={faPlus}
         />
       </div>
-      {/* {linkWidget && <PlaidLink />} */}
     </>
   );
 };

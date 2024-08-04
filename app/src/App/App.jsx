@@ -23,7 +23,7 @@ function App() {
         const elapsed = currentTime - parseInt(loginTimestamp, 10);
         const elapsedHours = elapsed / (1000 * 60 * 60);
         // User login timestamp valid for 1 hour
-        if (elapsedHours < .00000001) {
+        if (elapsedHours < 1) {
           // Session is still valid
           // Retrieve the authenticated user
           onAuthStateChanged(auth, async (currentUser) => {
