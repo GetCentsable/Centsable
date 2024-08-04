@@ -60,7 +60,6 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
       const { items } = req.body;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: calculateOrderAmount(items),
-        // amount: CalculateRoundups(userId, dateString),
         currency: "usd",
       });
       console.log('payment intent created');
@@ -73,3 +72,6 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
     }
   });
 });
+
+// amount: calculateOrderAmount(items),
+// amount: CalculateRoundups(userId, dateString),
