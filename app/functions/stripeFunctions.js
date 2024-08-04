@@ -9,53 +9,53 @@ const STRIPE_SECRET_KEY = functions.config().stripe.secret_key;
 // REMOVE SECRET KEY FROM PUBLIC VIEW
 const stripe = require("stripe")(STRIPE_SECRET_KEY);
 
-const calculateOrderAmount = async (items) => {
+const calculateOrderAmount = (items) => {
   return 98765; // Fixed amount for this example
 };
-async function CalculateRoundups(userId, dateString) {
-  console.log(`Starting CalculateRoundups...\nuser_id: ${userId}, dateString: ${dateString}`);
-  try {
-    console.log('Starting try block');
-    const db = getFirestore(app);
-    // const db = admin.firestore();
-    console.log('db acquired');
-    const docRef = db.collection('users').doc(userId).collection('transactions').doc(dateString);
-    console.log('doc reffed');
-    const doc = await docRef.get();
-    console.log('docref.get awaited');
+// async function CalculateRoundups(userId, dateString) {
+  // console.log(`Starting CalculateRoundups...\nuser_id: ${userId}, dateString: ${dateString}`);
+//   try {
+//     console.log('Starting try block');
+//     const db = getFirestore(app);
+//     // const db = admin.firestore();
+//     console.log('db acquired');
+//     const docRef = db.collection('users').doc(userId).collection('transactions').doc(dateString);
+//     console.log('doc reffed');
+//     const doc = await docRef.get();
+//     console.log('docref.get awaited');
 
-    if (!doc.exists) {
-      console.log(`No transactions found for ${dateString}`);
-      return 0;
-    }
-    console.log('doc exists');
+//     if (!doc.exists) {
+//       console.log(`No transactions found for ${dateString}`);
+//       return 0;
+//     }
+//     console.log('doc exists');
 
-    const data = doc.data();
-    let totalRoundup = 0;
+//     const data = doc.data();
+//     let totalRoundup = 0;
 
-    // Iterate over the transaction fields
-    for (const key in data) {
-      console.log(`forloop, total roundup: ${totalRoundup}`);
-      if (data.hasOwnProperty(key)) {
-        const transaction = data[key];
-        console.log(`transaction: ${transaction}`);
-        // Add the roundup_amount to the total, ensuring it's treated as a number
-        totalRoundup += parseFloat(transaction.roundup_amount);
-      }
-    }
+//     // Iterate over the transaction fields
+//     for (const key in data) {
+//       console.log(`forloop, total roundup: ${totalRoundup}`);
+//       if (data.hasOwnProperty(key)) {
+//         const transaction = data[key];
+//         console.log(`transaction: ${transaction}`);
+//         // Add the roundup_amount to the total, ensuring it's treated as a number
+//         totalRoundup += parseFloat(transaction.roundup_amount);
+//       }
+//     }
 
-    return totalRoundup;
-  } catch (error) {
-    console.error('Error fetching transactions:', error);
-    return 0;
-  }
-};
+//     return totalRoundup;
+//   } catch (error) {
+//     console.error('Error fetching transactions:', error);
+//     return 0;
+//   }
+// };
 
 exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
-      const userId = 'd39WT9V0IWRIlKxbT6RIy1joZaT2';
-      const dateString = 'August 2 2024';
+      // const userId = 'd39WT9V0IWRIlKxbT6RIy1joZaT2';
+      // const dateString = 'August 2 2024';
       console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
       const { items } = req.body;
       const paymentIntent = await stripe.paymentIntents.create({
