@@ -9,9 +9,9 @@ const STRIPE_SECRET_KEY = functions.config().stripe.secret_key;
 // REMOVE SECRET KEY FROM PUBLIC VIEW
 const stripe = require("stripe")(STRIPE_SECRET_KEY);
 
-// const calculateOrderAmount = async (items) => {
-//   return 1995; // Fixed amount for this example
-// };
+const calculateOrderAmount = async (items) => {
+  return 98765; // Fixed amount for this example
+};
 async function CalculateRoundups(userId, dateString) {
   console.log(`Starting CalculateRoundups...\nuser_id: ${userId}, dateString: ${dateString}`);
   try {
@@ -58,8 +58,8 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
       console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
       // const { items } = req.body;
       const paymentIntent = await stripe.paymentIntents.create({
-        // amount: calculateOrderAmount(items),
-        amount: CalculateRoundups(userId, dateString),
+        amount: calculateOrderAmount(items),
+        // amount: CalculateRoundups(userId, dateString),
         currency: "usd",
       });
       console.log('payment intent created');
