@@ -22,6 +22,9 @@ const configuration = new Configuration({
 
 const plaidClient = new PlaidApi(configuration);
 
+// Create instance of admin db
+const db = admin.firestore();
+
 // Middleware to verify Firebase ID tokens
 const authenticate = async (req, res, next) => {
   if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
@@ -49,7 +52,7 @@ exports.createLinkToken = functions.https.onRequest((req, res) => {
     try {
       await authenticate(req, res, async () => {
         try {
-          console.log('Creating link token for user:', req.user.uid);
+          // console.log('Creating link token for user:', req.user.uid);
           const response = await plaidClient.linkTokenCreate({
             user: {
               client_user_id: req.user.uid,
@@ -59,11 +62,62 @@ exports.createLinkToken = functions.https.onRequest((req, res) => {
             country_codes: ['US'],
             language: 'en',
           });
-          console.log('Link token created:', response.data);
+          // console.log('Link token created:', response.data);
           res.status(200).send(response.data);
         } catch (error) {
           console.error('Error creating link token:', error.response ? error.response.data : error.message);
           res.status(500).send({ error: 'Error creating link token' });
+        }
+      });
+    } catch (error) {
+      console.error('Authentication error:', error);
+      res.status(403).send('Unauthorized');
+    }
+  });
+});
+
+// Step 5:
+// Make a call to itemPublicTokenExchange() to retrieve
+// access token for user and store it in db
+exports.exchangePublicToken = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      await authenticate(req, res, async () => {
+        try {
+          // Extract public token and uid from body
+          const PUBLIC_TOKEN = req.body.public_token;
+          const uid = req.body.uid;
+
+          if (!PUBLIC_TOKEN || !uid ) {
+            return res.status(400).send({ error: 'public_token and uid are required' });
+          }
+
+          // Send request to Plaid for access token
+          const response = await plaidClient.itemPublicTokenExchange({
+            public_token: PUBLIC_TOKEN,
+          });
+
+          // Extract access token from Plaid API response
+          const { access_token: ACCESS_TOKEN, item_id: ITEM_ID } = response.data;
+
+          if (ACCESS_TOKEN && ITEM_ID) {
+            // Create user ref
+            const userRef = db.collection('users').doc(uid);
+
+            // Update the user doc with the access token
+            await userRef.set({
+              plaid_token: ACCESS_TOKEN,
+              itemId: ITEM_ID
+            }, { merge: true});
+
+            // If successfull send only response of sucess
+            res.status(200).send({ success: true });
+          } else {
+            res.status(500).send({ error: 'Failed to retrieve access token or item ID' });
+          }
+        } catch (error) {
+          console.error('Error retrieving access token:', error.response ? error.response.data : error.message);
+          res.status(500).send({ error: 'Error retrieving access token' });
         }
       });
     } catch (error) {
