@@ -56,7 +56,7 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
     try {
       // const userId = 'd39WT9V0IWRIlKxbT6RIy1joZaT2';
       // const dateString = 'August 2 2024';
-      console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
+      // console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
       const { items } = req.body;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: calculateOrderAmount(items),
