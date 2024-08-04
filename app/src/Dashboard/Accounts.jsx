@@ -19,10 +19,15 @@ const Accounts = ({ isUserDrawerOpen }) => {
         buttonText="Add account"
         isUserDrawerOpen={isUserDrawerOpen}
       />
-      <div className="pt-14 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 mx-auto">
+      <div className="linked-account-container pt-6 max-w-8xl">
+        <div className="flex flex-wrap justify-center">
           {dummyData.map((account, index) => (
-            <Card key={index} {...account} />
+            <div
+            key={index}
+            className="w-full md-lg:w-1/2 xl:w-1/3 3xl:w-1/4 p-4"
+            >
+              <Card {...account} />
+            </div>
           ))}
         </div>
       </div>

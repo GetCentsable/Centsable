@@ -3,7 +3,7 @@ import React, { createContext, useReducer } from "react";
 // Initial state
 const initialState = {
   linkSuccess: false,
-  isItemAccess: true,
+  isItemAccess: false,
   linkToken: "",
   linkTokenRetrieved: false,
   itemId: null,

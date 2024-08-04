@@ -14,7 +14,7 @@ const Card = ({ bank, name, lastFour, expDate, donated, limit }) => {
 
   return (
     <div className="w-80 pb-10 max-w-sm mx-auto">
-      <div className={`rounded-xl ${cardColor} text-white p-4 shadow-lg relative overflow-hidden h-48`}>
+      <div className={`rounded-xl ${cardColor} text-white p-4 shadow-lg relative overflow-hidden h-48 mx`}>
         <div className="absolute inset-0 opacity-10">
           <div className="w-full h-full"></div>
         </div>
