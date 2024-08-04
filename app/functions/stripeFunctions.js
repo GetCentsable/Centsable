@@ -38,6 +38,7 @@ async function CalculateRoundups(userId, dateString) {
       console.log(`forloop, total roundup: ${totalRoundup}`);
       if (data.hasOwnProperty(key)) {
         const transaction = data[key];
+        console.log(`transaction: ${transaction}`);
         // Add the roundup_amount to the total, ensuring it's treated as a number
         totalRoundup += parseFloat(transaction.roundup_amount);
       }
@@ -56,7 +57,7 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
       const userId = 'd39WT9V0IWRIlKxbT6RIy1joZaT2';
       const dateString = 'August 2 2024';
       console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
-      // const { items } = req.body;
+      const { items } = req.body;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: calculateOrderAmount(items),
         // amount: CalculateRoundups(userId, dateString),
