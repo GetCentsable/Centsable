@@ -15,8 +15,8 @@ const  CalculateRoundups = async (userId, dateString) => {
   console.log(`Starting CalculateRoundups...\nuser_id: ${userId}, dateString: ${dateString}`);
   try {
     console.log('Starting try block');
-    const db = getFirestore(app);
-    // const db = admin.firestore();
+    // const db = getFirestore(app);
+    const db = admin.firestore();
     console.log('db acquired');
     const docRef = db.collection('users').doc(userId).collection('transactions').doc(dateString);
     console.log('doc reffed');
