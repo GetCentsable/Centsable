@@ -1,8 +1,20 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../Components/General/Header';
-import PieChart from '../Components/General/PieChart';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import ImpactSection from '../Components/General/ImpactSection';
+import ContributionsSection from '../Components/General/ContributionsSection';
+import FeaturedSection from '../Components/General/FeaturedSection';
 
-const HomePage = ({ isUserDrawerOpen }) => {
+const HomePage = ({ isUserDrawerOpen, setSelectedNavItem }) => {
+  const [selectedCategory, setSelectedCategory] = useState('Personal');
+  const navigate = useNavigate();
+
+  const handleViewAll = () => {
+    setSelectedNavItem('Search');
+    navigate('/search');
+  };
+
   const contributions = [
     {
       title: "Personal",
@@ -42,32 +54,21 @@ const HomePage = ({ isUserDrawerOpen }) => {
         icon={faMagnifyingGlass}
         buttonText="View All"
         isUserDrawerOpen={isUserDrawerOpen}
+        onClick={handleViewAll}
       />
-      <div className="pt-14 max-w-7xl mx-auto">
-        <div className="flex items-center mb-4">
-          <h1 className="text-2xl font-bold mr-4">Your Impact</h1>
-          <div className="flex space-x-2">
-            <button className="px-3 py-1 bg-red-400 text-white rounded-full">Personal</button>
-            <button className="px-3 py-1 bg-gray-200 rounded-full">Tulsa</button>
-            <button className="px-3 py-1 bg-gray-200 rounded-full">All</button>
-          </div>
-        </div>
-      </div>
-      <div className="pt-14 max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Your Contributions</h1>
-        <div className="hidden md:flex md:flex-col lg:flex-row justify-between items-center">
-          {contributions.map((contrib, index) => (
-            <div key={index} className="w-full md:w-1/3 p-4">
-              <PieChart total={contrib.total} communities={contrib.communities} />
-              <h3 className="text-center font-bold">{contrib.title}</h3>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="pt-14 max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Featured</h1>
-        <div className="bg-white p-4 rounded-lg">
-        </div>
+      
+      <ImpactSection 
+        selectedCategory={selectedCategory} 
+        setSelectedCategory={setSelectedCategory} 
+      />
+      
+      <ContributionsSection 
+        selectedCategory={selectedCategory} 
+        contributions={contributions}
+      />
+      
+      <div className="hidden lg:block">
+        <FeaturedSection />
       </div>
     </div>
   );
