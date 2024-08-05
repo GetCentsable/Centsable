@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { faHome, faHistory, faWallet, faSearch, faArrowRightFromBracket, faForwardStep } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faHistory, faWallet, faSearch, faArrowRightFromBracket, faForwardStep, faBars, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from '../Components/General/Button';
 import UserDrawer from '../Components/General/UserDrawer';
@@ -10,34 +10,27 @@ import { getAuth, signOut } from 'firebase/auth';
 
 const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, selectedItem, setSelectedItem }) => {
   const { user, setUser, setIsLoggedIn } = useContext(UserContext);
-
-  // Create instance of firebase auth
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const auth = getAuth(app);
-
-  // Initialize the useNavigate hook
   const navigate = useNavigate();
 
-  // On component mount, navigate home(i.e. when user refreshes)
   useEffect(() => {
     navigate('/');
-  }, [])
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  // Rerender when user object changes to get username
-  useEffect(() => {
-    // console.log('Username is:',user.username);
-  }, [user])
+  useEffect(() => {}, [user]);
 
   const handleSignOut = async (e) => {
     e.preventDefault();
     try {
-      // Sign out with firebase auth
       await signOut(auth);
       setUser(null);
       setIsLoggedIn(false);
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('loginTimestamp');
-
-      // Navigate to default '/' path after sign out
       navigate('/');
     } catch (error) {
       console.error('Error logging out:', error);
@@ -51,88 +44,104 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, sele
     { icon: faWallet, title: 'Accounts' }
   ];
 
+  const renderNavContent = () => (
+    <>
+      <nav className="space-y-2">
+        {navItems.map((item, index) => (
+          <Link
+            to={`/${item.title.toLowerCase()}`}
+            key={index}
+            className="block mb-2 last:mb-0"
+            onClick={() => {
+              setSelectedItem(item.title);
+              if (isMobile) {
+                toggleNavBar();
+                if (isUserDrawerOpen) toggleUserDrawer();
+              }
+            }}
+          >
+            <Button
+              key={index}
+              icon={item.icon}
+              title={item.title}
+              isSelected={selectedItem === item.title}
+              isNavButton={true}
+              isOpen={isOpen}
+              className="my-custom-class" 
+            />
+          </Link>
+        ))}
+      </nav>
+    </>
+  );
+
+  const handleUserDrawerToggle = () => {
+    if (isMobile) {
+      if (isOpen) toggleNavBar(); // Close NavBar if it's open
+      toggleUserDrawer(); // Toggle UserDrawer
+    } else {
+      toggleUserDrawer(); // Just toggle UserDrawer for desktop
+    }
+  };
+
   return (
     <>
-      <div 
-        className={`fixed top-0 left-0 h-screen bg-slate-700 transition-all duration-300 ${
-          isOpen ? 'w-64' : 'w-18'
-        } flex flex-col`}
-      >
-        <div className="flex-grow p-4">
-
-          <img src={`${isOpen ? '' : ''}`} alt='L' className='-24 mx-auto mb-6' />
-
-          <nav className="space-y-2">
-            {navItems.map((item, index) => (
-              <Link
-                to={`/${item.title.toLowerCase()}`}
-                key={index}
-                className="block mb-2 last:mb-0"
-                onClick={() => setSelectedItem(item.title)}
-              >
-                <Button
-                  key={index}
-                  icon={item.icon}
-                  title={item.title}
-                  isSelected={selectedItem === item.title}
-                  isNavButton={true}
-                  isOpen={isOpen}
-                  className="my-custom-class" 
-                />
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        <div className="mt-auto">
-          <div className={`w-full flex ${isOpen ? 'justify-end pr-4' : 'justify-center'}`}>
-            <button
-              onClick={toggleNavBar}
-              className={`p-2 pb-6 flex items-center justify-center text-white rounded-full transition-all duration-100 ${isOpen ? 'mr-[-8px]' : ''}`}
-            >
-              <FontAwesomeIcon 
-                icon={faForwardStep}
-                size="xl"
-                className={`transition-transform duration-100 ${isOpen ? 'rotate-180' : ''}`} 
-              />
+      {isMobile ? (
+        <>
+          <div className="fixed top-0 left-0 right-0 h-16 bg-slate-700 flex items-center justify-between px-4 z-50">
+            <button onClick={toggleNavBar} className="text-white">
+              <FontAwesomeIcon icon={faBars} size="lg" />
+            </button>
+            <img src="" alt="Logo" className="h-8" />
+            <button onClick={handleUserDrawerToggle} className="text-white">
+              <img src="https://picsum.photos/100/100" alt="User avatar" className="w-12 h-12 rounded-full" />
             </button>
           </div>
-
-          <div className="border-t border-slate-600" />
-
-          <div className="p-4 flex items-center justify-between">
-            <div
-              className="flex items-center"
-              onClick={toggleUserDrawer}  
-            >
-              {/* update user picture here */}
-              <img src="https://picsum.photos/100/100" alt="User avatar" className="w-10 h-10 rounded-full" />
-              {isOpen && user && (
-                <div className="ml-3">
-                  <p className="text-neutral-200 font-semibold">{user.displayName}</p>
-                  <p className="text-neutral-400 text-xs">{user.email}</p>
-                </div>
+          <div className={`fixed top-16 left-0 right-0 bottom-0 bg-slate-700 transition-all duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} z-40`}>
+            <div className="h-full overflow-y-auto p-4">
+              {renderNavContent()}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className={`fixed top-0 left-0 h-screen bg-slate-700 transition-all duration-300 ${isOpen ? 'w-64' : 'w-18'} flex flex-col`}>
+          <div className="flex-grow p-4">
+            <img src={`${isOpen ? '' : ''}`} alt='L' className='-24 mx-auto mb-6' />
+            {renderNavContent()}
+          </div>
+          <div className="mt-auto">
+            <div className={`w-full flex ${isOpen ? 'justify-end pr-4' : 'justify-center'}`}>
+              <button onClick={toggleNavBar} className={`p-2 pb-6 flex items-center justify-center text-white rounded-full transition-all duration-100 ${isOpen ? 'mr-[-8px]' : ''}`}>
+                <FontAwesomeIcon icon={faForwardStep} size="xl" className={`transition-transform duration-100 ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+            <div className="border-t border-slate-600" />
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center" onClick={handleUserDrawerToggle}>
+                <img src="https://picsum.photos/100/100" alt="User avatar" className="w-10 h-10 rounded-full" />
+                {isOpen && user && (
+                  <div className="ml-3">
+                    <p className="text-neutral-200 font-semibold">{user.displayName}</p>
+                    <p className="text-neutral-400 text-xs">{user.email}</p>
+                  </div>
+                )}
+              </div>
+              {isOpen && (
+                <button onClick={handleSignOut} className="text-red-400 hover:text-red-500 cursor-pointer bg-transparent border-none p-0">
+                  <FontAwesomeIcon icon={faArrowRightFromBracket} size="xl" />
+                </button>
               )}
             </div>
-            {isOpen && (
-              <button
-                onClick={handleSignOut}
-                className="text-red-400 hover:text-red-500 cursor-pointer bg-transparent border-none p-0"
-              >
-                <FontAwesomeIcon
-                  icon={faArrowRightFromBracket}
-                  size="xl"
-                />
-              </button>
-            )}
           </div>
         </div>
-        <UserDrawer
-          // userUsername={userUsername}
-          isOpen={isUserDrawerOpen}
-          onClose={toggleUserDrawer}
-        />
-      </div>
+      )}
+      <UserDrawer 
+        isOpen={isUserDrawerOpen} 
+        onClose={handleUserDrawerToggle} 
+        user={user}
+        handleSignOut={handleSignOut}
+        isMobile={isMobile}
+      />
     </>
   );
 };

@@ -24,7 +24,8 @@
     "react-router-dom": "^6.25.1",
     "stripe": "^16.6.0",
     "swiper": "^11.1.9",
-    "tailwind-merge": "^2.4.0"
+    "tailwind-merge": "^2.4.0",
+    "tailwind-scrollbar-hide": "^1.1.7"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

@@ -78,6 +78,7 @@ const transferDailyDonations = async () => {
     });
 
     console.log(`Total daily withdrawal of ${totalDailyWithdrawals} recorded for ${dateString}`);
+
   } catch (error) {
     console.error('Error transferring daily donations:', error);
   }
@@ -99,6 +100,7 @@ const logTransaction = async (userId, recipientId, amount, type = 'debit') => {
 
 // Function to trigger the transfer immediately for testing
 exports.triggerImmediateTransfer = functions.https.onRequest(async (req, res) => {
+
   await transferDailyDonations();
   res.status(200).send('Immediate transfer job completed');
 });
@@ -109,3 +111,4 @@ exports.triggerImmediateTransfer = functions.https.onRequest(async (req, res) =>
 //   await transferDailyDonations();
 //   console.log('Daily transfer job completed');
 // });
+
