@@ -2,7 +2,7 @@ import React from 'react';
 
 const SummaryTable = ({ data, onRowClick, selectedDate }) => (
   <div className="bg-white p-4 rounded-lg shadow">
-    <div className="overflow-auto max-h-[calc(100vh-300px)]">
+    <div className="overflow-auto max-h-[calc(100vh-300px)] scrollbar-hide">
       <table className="w-full table-fixed">
         <colgroup>
           <col className="w-1/2" />
