@@ -58,7 +58,7 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
     try {
       const userId = 'd39WT9V0IWRIlKxbT6RIy1joZaT2';
       const dateString = 'August 2 2024';
-      console.log(`Starting create payment intent... user_id: ${userId}, dateString: ${dateString}`);
+      console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
 
       const totalRoundup = await CalculateRoundups(userId, dateString);
       console.log(`Total Roundup Calculated: ${totalRoundup}`);
@@ -67,12 +67,14 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
         return res.status(400).send({ error: 'No transactions found or total roundup is zero.' });
       }
 
+
       const amountInCents = Math.round(totalRoundup * 100);
 
       console.log(`Amount in Cents: ${amountInCents}`);
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
+
         currency: "usd",
       });
       console.log('payment intent created');
@@ -85,3 +87,4 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
     }
   });
 });
+

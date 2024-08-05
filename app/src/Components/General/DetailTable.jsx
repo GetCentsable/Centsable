@@ -5,7 +5,7 @@ const DetailTable = ({ data, selectedDate }) => (
     <h2 className="font-bold mb-2 py-2 px-4 sticky top-0 bg-red-400 text-white">
       {selectedDate}
     </h2>
-    <div className="overflow-auto max-h-[calc(100vh-300px)]">
+    <div className="overflow-auto max-h-[calc(100vh-300px)] scrollbar-hide">
       <table className="w-full table-fixed">
         <colgroup>
           <col className="w-3/4" />
