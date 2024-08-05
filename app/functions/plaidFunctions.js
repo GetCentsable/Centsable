@@ -192,3 +192,5 @@ exports.exchangePublicToken = functions.https.onRequest((req, res) => {
     }
   });
 });
+
+// Function that loads user transactions from API for specified bank

@@ -102,7 +102,7 @@ const Donations = ({ isUserDrawerOpen }) => {
       )}
       <div className="flex flex-col md:flex-row justify-center items-start space-y-6 md:space-y-0 md:space-x-6">
         {/* Pie Chart Column */}
-        <div className={`${mobileView === 'pie' ? 'block' : 'hidden'} md:block w-full md:w-80`}>
+        <div className={`${mobileView === 'pie' ? 'block' : 'hidden'} md:block w-full md:w-80 lg:w-96`}>
           <PieChartSection weeklyTotal={weeklyTotal} communities={communities} onClick={handlePieClick} />
         </div>
 
