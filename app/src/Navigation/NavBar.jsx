@@ -8,8 +8,7 @@ import UserContext from '../Context/UserContext';
 import { app } from '../Firebase/firebase';
 import { getAuth, signOut } from 'firebase/auth';
 
-const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) => {
-  const [selectedItem, setSelectedItem] = useState('Home');
+const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, selectedItem, setSelectedItem }) => {
   const { user, setUser, setIsLoggedIn } = useContext(UserContext);
 
   // Create instance of firebase auth
@@ -69,12 +68,12 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer }) =>
                 to={`/${item.title.toLowerCase()}`}
                 key={index}
                 className="block mb-2 last:mb-0"
+                onClick={() => setSelectedItem(item.title)}
               >
                 <Button
                   key={index}
                   icon={item.icon}
                   title={item.title}
-                  onClick={() => setSelectedItem(item.title)}
                   isSelected={selectedItem === item.title}
                   isNavButton={true}
                   isOpen={isOpen}

@@ -2,8 +2,16 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+    // Match any document in the "users" collection
+    match /users/{userId} {
+      // Allow read and write access only to authenticated users who are trying to access their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Match any document in the "recipients" collection
+    match /recipients/{recipientId} {
+      // Allow read access to anyone
+      allow read: if true;
     }
   }
 }

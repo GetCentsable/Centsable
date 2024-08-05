@@ -14,10 +14,10 @@ function App() {
   useEffect(() => {
     // Async function checks for elapsed time and logs user out after 1 hour
     const checkLoginSession = async () => {
-      console.log('Check login session called!!') 
+      // console.log('Check login session called!!')
       // Check if user is already logged in and session is valid
       const loginTimestamp = localStorage.getItem('loginTimestamp');
-      console.log('Login timestamp:', loginTimestamp)
+      // console.log('Login timestamp:', loginTimestamp)
       if (loginTimestamp) {
         const currentTime = new Date().getTime();
         const elapsed = currentTime - parseInt(loginTimestamp, 10);
