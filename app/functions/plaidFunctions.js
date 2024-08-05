@@ -101,14 +101,80 @@ exports.exchangePublicToken = functions.https.onRequest((req, res) => {
           const { access_token: ACCESS_TOKEN, item_id: ITEM_ID } = response.data;
 
           if (ACCESS_TOKEN && ITEM_ID) {
-            // Create user ref
-            const userRef = db.collection('users').doc(uid);
+            // Retrieve information about the item to get the institution details
+            const itemResponse = await plaidClient.itemGet({
+              access_token: ACCESS_TOKEN,
+            });
 
-            // Update the user doc with the access token
-            await userRef.set({
+            // Institution Id from itemResponse
+            const institutionId = itemResponse.data.item.institution_id;
+
+            // If the institution is present in the id extract the institution name
+            let institutionName = 'Unknown Institution';
+            if (institutionId) {
+              const institutionResponse = await plaidClient.institutionsGetById({
+                institution_id: institutionId,
+                country_codes: ['US'],
+              });
+              institutionName = institutionResponse.data.institution.name;
+            }
+
+            // Create auth request to retrieve account mask and numbers
+            const authResponse = await plaidClient.authGet({
+              access_token: ACCESS_TOKEN,
+            })
+
+            // Store account information in array for bankData
+            const accounts = [];
+            if (authResponse && authResponse.data.accounts) {
+              for (const account of authResponse.data.accounts) {
+                // Gather attributes
+                const mask = account.mask;
+                const name = account.name;
+                const official_name = account.official_name;
+                const subtype = account.subtype;
+
+                // Store attributes in object and append to accounts array
+                const account_object = {
+                  mask: mask,
+                  name: name,
+                  official_name: official_name,
+                  subtype: subtype,
+                }
+
+                accounts.push(account_object);
+              }
+            }
+
+            // Create user ref to tokens collection
+            const userTokenRef = db.collection('users_tokens').doc(uid);
+
+            // Fetch the doc to check if it exists
+            const doc = await userTokenRef.get();
+
+            // Create bank data object to store in firestore
+            const bankData = {
               plaid_token: ACCESS_TOKEN,
-              itemId: ITEM_ID
-            }, { merge: true});
+              item_id: ITEM_ID,
+              institution_id: institutionId,
+              institution_name: institutionName,
+              accounts: accounts
+            }
+
+            if (!doc.exists) {
+              // Create the doc if it does not exists
+              await userTokenRef.set({
+                banks: [bankData]
+              });
+            } else {
+              // Update the user doc if it exists with the access token / item id
+              await userTokenRef.set({
+                banks: admin.firestore.FieldValue.arrayUnion(bankData),
+              }, { merge: true});
+            }
+
+            // Debug logs
+            console.log(response.data)
 
             // If successfull send only response of sucess
             res.status(200).send({ success: true });

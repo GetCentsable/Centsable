@@ -11,6 +11,8 @@ const AccountHeader = ({ pageTopic, supportingText }) => {
   const {
     linkTokenRetrieved,
     linkTokenError,
+    linked_accounts,
+    link_ready,
     dispatch
   } = useContext(PlaidContext);
 
@@ -82,6 +84,8 @@ const AccountHeader = ({ pageTopic, supportingText }) => {
         if(linkTokenError) {
           // console.log('Link Token Error:', linkTokenError, error);
         }
+      } finally {
+        dispatch({ type: "SET_STATE", state: { link_ready: true } });
       }
     },
     [dispatch]
@@ -106,16 +110,18 @@ const AccountHeader = ({ pageTopic, supportingText }) => {
           <p className="text-gray-600">{supportingText}</p>
         </div>
         <div>
-          {loading ? 
-            <SimpleButton
-              title={'Loading...'}
-              className='mt-2 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg'
-            /> : linkTokenRetrieved ? <PlaidLinkButton /> : (
+          {linked_accounts ?
+            loading ? 
               <SimpleButton
-              title={'Loading...'}
-              className='mt-2 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg'
-            />
-            )
+                title={'Loading...'}
+                className='mt-2 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg'
+              /> : linkTokenRetrieved ? <PlaidLinkButton button_text={'Add Another Account'} /> : (
+                <SimpleButton
+                title={'Loading...'}
+                className='mt-2 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg'
+                />
+              )
+           : <div></div>
           }
         </div>
       </div>

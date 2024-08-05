@@ -21,19 +21,13 @@ const logger = require("firebase-functions/logger");
 
 
 // Import the functions from the other files
-const { signup, signin, verifyToken, verifyEmail, resetPassword, updatePassword, signout} = require('./authenticationFunctions');
+const { getLinkedAccounts } = require('./frontendFunctions');
 const { createLinkToken, exchangePublicToken } = require('./plaidFunctions');
 const { createPaymentIntent } = require('./stripeFunctions');
 const { triggerImmediateTransfer, scheduleDailyTransfer } = require('./transferDailyDonations');
 
-// Export the authentication functions
-// exports.signup = signup;
-// exports.signin = signin;
-// exports.verifyToken = verifyToken;
-// exports.verifyEmail = verifyEmail;
-// exports.resetPassword = resetPassword;
-// exports.updatePassword = updatePassword;
-// exports.signout = signout;
+// Export the frontend functions
+exports.getLinkedAccounts = getLinkedAccounts;
 
 // Export Plaid functions for API request
 exports.createLinkToken = createLinkToken;
