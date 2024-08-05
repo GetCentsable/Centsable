@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
+import { twMerge } from "tailwind-merge";
 import PlaidContext from "../../Context/PlaidContext.jsx";
 // import UserContext from "../../Context/UserContext.jsx";
 import SimpleButton from "../General/SimpleButton.jsx";
@@ -7,7 +8,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { getAuth } from 'firebase/auth';
 import { app } from "../../Firebase/firebase.js";
 
-const PlaidLinkButton = () => {
+const PlaidLinkButton = ({ button_text, className }) => {
   const {
     linkToken,
     linkSuccess,
@@ -69,19 +70,19 @@ const PlaidLinkButton = () => {
                 },
               });
               return;
-            } else if (response.ok) {
-              console.log('On success callback completed!');
             }
 
           }
         } catch (err) {
           console.error('There was an error exchanging access token:', err);
+        } finally {
+          dispatch({ type: "SET_STATE", state: { linkSuccess: !linkSuccess } });
+          console.log('On success callback completed!');
         }
       };
 
       exchangePublicTokenForAccessToken();
 
-      dispatch({ type: "SET_STATE", state: { linkSuccess: true } });
       window.history.pushState("", "", "/");
     },
     [dispatch]
@@ -105,7 +106,7 @@ const PlaidLinkButton = () => {
     e.preventDefault();
     // console.log('Link Button Clicked, Token is:', linkToken)
     open();
-    console.log('OPEN CALLED, ready is:', ready)
+    // console.log('OPEN CALLED, ready is:', ready)
   }
 
   // useEffect(() => {
@@ -116,8 +117,8 @@ const PlaidLinkButton = () => {
     <>
       <div>
         <SimpleButton
-          title={`Add Another Account`}
-          className='mt-2 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg'
+          title={button_text}
+          className={twMerge(`mt-6 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg`, className)}
           onClick={handleClick}
           disabled={!ready}
           icon={faPlus}
