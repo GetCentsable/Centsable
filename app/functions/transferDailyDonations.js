@@ -20,10 +20,7 @@ const transferDailyDonations = async (userId) => {
     const holdingAccountData = holdingAccountDoc.data();
 
     let totalTransactionAmount = 0;
-    const now = new Date();
-    const timezoneOffset = now.getTimezoneOffset() * 60000; // Offset in milliseconds
-    const localISOTime = (new Date(now.getTime() - timezoneOffset)).toISOString().split('T')[0];
-    const dateString = localISOTime.replace(/-/g, '-');
+    const dateString = '08-04-2024'; // Hardcoded date for August 4th, 2024
     const transactionsRef = userRef.collection('transactions').doc(dateString);
     const transactionsDoc = await transactionsRef.get();
 
