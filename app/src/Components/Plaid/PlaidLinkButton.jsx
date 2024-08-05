@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
+import { twMerge } from "tailwind-merge";
 import PlaidContext from "../../Context/PlaidContext.jsx";
 // import UserContext from "../../Context/UserContext.jsx";
 import SimpleButton from "../General/SimpleButton.jsx";
@@ -7,11 +8,10 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { getAuth } from 'firebase/auth';
 import { app } from "../../Firebase/firebase.js";
 
-const PlaidLinkButton = () => {
+const PlaidLinkButton = ({ button_text, className }) => {
   const {
     linkToken,
-    linkSuccess,
-    isItemAccess,
+    linkCallBackToggle,
     dispatch
   } = useContext(PlaidContext);
   // const { user } = useContext(UserContext);
@@ -20,21 +20,24 @@ const PlaidLinkButton = () => {
   const auth = getAuth(app);
 
   // const onSuccess = () => {
-  //   console.log('SUUUUCCCESSSS!!!')
-  // }
+    //   console.log('SUUUUCCCESSSS!!!')
+    // }
+    
+    const onSuccess = useCallback(
+      (public_token) => {
+      // Toggle link to start page refresh
+      dispatch({ type: "SET_STATE", state: { linkCallStarted: true } });
 
-  const onSuccess = useCallback(
-    (public_token) => {
       // Step 4:
       // On link success, send passed in public_token to server
       // to exchange with Plaid API for access token
       const exchangePublicTokenForAccessToken = async () => {
         // Path to firbase function
         const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/exchangePublicToken';
-
+        
         // Debug logging
         // console.log('Public token is:', public_token)
-
+        
         try {
           // Getting current user object from firebase auth
           const currentUser = auth.currentUser;
@@ -69,19 +72,21 @@ const PlaidLinkButton = () => {
                 },
               });
               return;
-            } else if (response.ok) {
-              console.log('On success callback completed!');
             }
 
           }
         } catch (err) {
           console.error('There was an error exchanging access token:', err);
+        } finally {
+          dispatch({ type: "SET_STATE", state: { linkSuccess: true } });
+          // Toggle link to end page refresh
+          dispatch({ type: "SET_STATE", state: { linkCallStarted: false } });
+          console.log('On success callback completed!');
         }
       };
-
+      
       exchangePublicTokenForAccessToken();
-
-      dispatch({ type: "SET_STATE", state: { linkSuccess: true } });
+      
       window.history.pushState("", "", "/");
     },
     [dispatch]
@@ -105,7 +110,7 @@ const PlaidLinkButton = () => {
     e.preventDefault();
     // console.log('Link Button Clicked, Token is:', linkToken)
     open();
-    console.log('OPEN CALLED, ready is:', ready)
+    // console.log('OPEN CALLED, ready is:', ready)
   }
 
   // useEffect(() => {
@@ -116,8 +121,8 @@ const PlaidLinkButton = () => {
     <>
       <div>
         <SimpleButton
-          title={`Add Another Account`}
-          className='mt-2 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg'
+          title={button_text}
+          className={twMerge(`mt-6 px-4 py-3 max-w-56 text-md bg-red-400 text-neutral-100 rounded-lg`, className)}
           onClick={handleClick}
           disabled={!ready}
           icon={faPlus}
