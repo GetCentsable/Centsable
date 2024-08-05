@@ -8,10 +8,10 @@ import { app } from "../Firebase/firebase.js";
 import { getAuth } from 'firebase/auth';
 
 const Accounts = ({ isUserDrawerOpen }) => {
-  const { linked_accounts, link_ready, linkSuccess, linkCallBackToggle, dispatch } = useContext(PlaidContext);
+  const { linked_accounts, link_ready, linkSuccess, linkCallStarted, dispatch } = useContext(PlaidContext);
   const [ loading, setLoading ] = useState(false);
   const [ ready, setReady ] = useState(false);
-  const prevLinkCallBackToggleRef = useRef(linkCallBackToggle);
+  const prevLinkCallStartedRef = useRef(linkCallStarted);
 
   // Insantiate firebase auth
   const auth = getAuth(app);
@@ -77,20 +77,21 @@ const Accounts = ({ isUserDrawerOpen }) => {
     }
     setLoading(true);
     
-    // Invoke the async function with timeout if link is toggled
-    if (prevLinkCallBackToggleRef.current !== linkCallBackToggle) {
-      setTimeout(() => {
-        getLinkedAccounts();
-        // console.log(linkCallBackToggle)
-      }, 6000);
-    } else {
-      // Otherwise just get accounts on page load
+    // Invoke the async function without timeout on page load
+    if (prevLinkCallStartedRef.current === linkCallStarted) {
       getLinkedAccounts();
     }
-    
-    // Lastly update prevLinkCalBackToggleRef
-    prevLinkCallBackToggleRef.current = linkCallBackToggle;
-  }, [dispatch, linkCallBackToggle])
+
+    // Invoke the async function with timeout if linkCallStarted toggles from true to false
+    if (prevLinkCallStartedRef.current && !linkCallStarted) {
+      setTimeout(() => {
+        getLinkedAccounts();
+      }, 300);
+    }
+
+    // Update prevLinkCallStartedRef to the current value
+    prevLinkCallStartedRef.current = linkCallStarted;
+  }, [dispatch, linkCallStarted])
 
   useEffect(() => {
     if(link_ready) {

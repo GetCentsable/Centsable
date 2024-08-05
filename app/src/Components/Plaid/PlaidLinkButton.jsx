@@ -26,7 +26,7 @@ const PlaidLinkButton = ({ button_text, className }) => {
     const onSuccess = useCallback(
       (public_token) => {
       // Toggle link to start page refresh
-      dispatch({ type: "SET_STATE", state: { linkCallBackToggle: !linkCallBackToggle } });
+      dispatch({ type: "SET_STATE", state: { linkCallStarted: true } });
 
       // Step 4:
       // On link success, send passed in public_token to server
@@ -79,6 +79,8 @@ const PlaidLinkButton = ({ button_text, className }) => {
           console.error('There was an error exchanging access token:', err);
         } finally {
           dispatch({ type: "SET_STATE", state: { linkSuccess: true } });
+          // Toggle link to end page refresh
+          dispatch({ type: "SET_STATE", state: { linkCallStarted: false } });
           console.log('On success callback completed!');
         }
       };
