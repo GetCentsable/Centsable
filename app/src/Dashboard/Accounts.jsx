@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import AccountHeader from '../Components/General/AccountHeader';
 import PlaidLinkButton from '../Components/Plaid/PlaidLinkButton.jsx';
 import SimpleButton from '../Components/General/SimpleButton.jsx';
@@ -8,16 +8,15 @@ import { app } from "../Firebase/firebase.js";
 import { getAuth } from 'firebase/auth';
 
 const Accounts = ({ isUserDrawerOpen }) => {
-  const { linked_accounts, link_ready, linkSuccess, dispatch } = useContext(PlaidContext);
+  const { linked_accounts, link_ready, linkSuccess, linkCallStarted, dispatch } = useContext(PlaidContext);
   const [ loading, setLoading ] = useState(false);
   const [ ready, setReady ] = useState(false);
+  const prevLinkCallStartedRef = useRef(linkCallStarted);
 
   // Insantiate firebase auth
   const auth = getAuth(app);
 
   useEffect(() => {
-    setLoading(true);
-
     // Function that loads user accounts
     // from db, then adds those accounts to
     // the page
@@ -76,18 +75,29 @@ const Accounts = ({ isUserDrawerOpen }) => {
         setLoading(false);
       }
     }
-
-    // Invoke the async function with timeout
-    setTimeout(() => {
+    setLoading(true);
+    
+    // Invoke the async function without timeout on page load
+    if (prevLinkCallStartedRef.current === linkCallStarted) {
       getLinkedAccounts();
-    }, 300);
-  }, [dispatch, linkSuccess])
+    }
+
+    // Invoke the async function with timeout if linkCallStarted toggles from true to false
+    if (prevLinkCallStartedRef.current && !linkCallStarted) {
+      setTimeout(() => {
+        getLinkedAccounts();
+      }, 300);
+    }
+
+    // Update prevLinkCallStartedRef to the current value
+    prevLinkCallStartedRef.current = linkCallStarted;
+  }, [dispatch, linkCallStarted])
 
   useEffect(() => {
     if(link_ready) {
       setTimeout(() => {
         setReady(true);
-      }, 600)
+      }, 300)
     }
   }, [link_ready])
 
