@@ -11,7 +11,7 @@ const stripe = require("stripe")(STRIPE_SECRET_KEY);
 
 // ROUND UP VERSION -----------------------------------------------------------------------------------------
 
-const  CalculateRoundups = async (userId, dateString) => {
+const CalculateRoundups = async (userId, dateString) => {
   console.log(`Starting CalculateRoundups...\nuser_id: ${userId}, dateString: ${dateString}`);
   try {
     console.log('Starting try block');
@@ -34,14 +34,17 @@ const  CalculateRoundups = async (userId, dateString) => {
 
     // Iterate over the transaction fields
     for (const key in data) {
+      console.log(`key: ${key}`);
       console.log(`forloop, total roundup: ${totalRoundup}`);
       if (data.hasOwnProperty(key)) {
         const transaction = data[key];
         console.log(`transaction: ${transaction}`);
+        console.log(`transaction roundup amount: ${transaction.roundup_amount}`);
         // Add the roundup_amount to the total, ensuring it's treated as a number
         totalRoundup += parseFloat(transaction.roundup_amount);
       }
     }
+    console.log(`Total Roundup for ${dateString}: ${totalRoundup}`);
     return totalRoundup;
   } catch (error) {
     console.error('Error fetching transactions:', error);
@@ -50,11 +53,12 @@ const  CalculateRoundups = async (userId, dateString) => {
 };
 
 exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
+  console.log('createpayment intent outside cors');
   cors(req, res, async () => {
     try {
       const userId = 'd39WT9V0IWRIlKxbT6RIy1joZaT2';
-      const dateString = 'August 2 2024';
-      console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
+      const dateString = 'August 4 2024';
+      console.log(`Starting create payment intent... user_id: ${userId}, dateString: ${dateString}`);
 
       const totalRoundup = await CalculateRoundups(userId, dateString);
       console.log(`Total Roundup Calculated: ${totalRoundup}`);
@@ -63,8 +67,12 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
         return res.status(400).send({ error: 'No transactions found or total roundup is zero.' });
       }
 
+      const amountInCents = Math.round(totalRoundup * 100);
+
+      console.log(`Amount in Cents: ${amountInCents}`);
+
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(totalRoundup * 100),
+        amount: amountInCents,
         currency: "usd",
       });
       console.log('payment intent created');
@@ -77,29 +85,3 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
     }
   });
 });
-
-
-// STARTER VERSION -----------------------------------------------------------------------------
-
-// const calculateOrderAmount = (items) => {
-//   return 98765; // Fixed amount for this example
-// };
-
-// exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
-//   cors(req, res, async () => {
-//     try {
-//       const { items } = req.body;
-//       const paymentIntent = await stripe.paymentIntents.create({
-//         amount: calculateOrderAmount(items),
-//         currency: "usd",
-//       });
-//       console.log('payment intent created');
-  
-//       res.status(200).send({
-//         clientSecret: paymentIntent.client_secret,
-//       });
-//     } catch (error) {
-//       res.status(500).send({ error: error.message });
-//     }
-//   });
-// });
