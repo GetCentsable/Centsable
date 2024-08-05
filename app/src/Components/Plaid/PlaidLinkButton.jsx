@@ -11,8 +11,7 @@ import { app } from "../../Firebase/firebase.js";
 const PlaidLinkButton = ({ button_text, className }) => {
   const {
     linkToken,
-    linkSuccess,
-    isItemAccess,
+    linkCallBackToggle,
     dispatch
   } = useContext(PlaidContext);
   // const { user } = useContext(UserContext);
@@ -21,21 +20,24 @@ const PlaidLinkButton = ({ button_text, className }) => {
   const auth = getAuth(app);
 
   // const onSuccess = () => {
-  //   console.log('SUUUUCCCESSSS!!!')
-  // }
+    //   console.log('SUUUUCCCESSSS!!!')
+    // }
+    
+    const onSuccess = useCallback(
+      (public_token) => {
+      // Toggle link to start page refresh
+      dispatch({ type: "SET_STATE", state: { linkCallBackToggle: !linkCallBackToggle } });
 
-  const onSuccess = useCallback(
-    (public_token) => {
       // Step 4:
       // On link success, send passed in public_token to server
       // to exchange with Plaid API for access token
       const exchangePublicTokenForAccessToken = async () => {
         // Path to firbase function
         const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/exchangePublicToken';
-
+        
         // Debug logging
         // console.log('Public token is:', public_token)
-
+        
         try {
           // Getting current user object from firebase auth
           const currentUser = auth.currentUser;
@@ -76,13 +78,13 @@ const PlaidLinkButton = ({ button_text, className }) => {
         } catch (err) {
           console.error('There was an error exchanging access token:', err);
         } finally {
-          dispatch({ type: "SET_STATE", state: { linkSuccess: !linkSuccess } });
+          dispatch({ type: "SET_STATE", state: { linkSuccess: true } });
           console.log('On success callback completed!');
         }
       };
-
+      
       exchangePublicTokenForAccessToken();
-
+      
       window.history.pushState("", "", "/");
     },
     [dispatch]
