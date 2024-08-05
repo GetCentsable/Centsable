@@ -24,6 +24,7 @@ const logger = require("firebase-functions/logger");
 const { getLinkedAccounts } = require('./frontendFunctions');
 const { createLinkToken, exchangePublicToken } = require('./plaidFunctions');
 const { createPaymentIntent } = require('./stripeFunctions');
+const { triggerImmediateTransfer, scheduleDailyTransfer } = require('./transferDailyDonations');
 
 // Export the frontend functions
 exports.getLinkedAccounts = getLinkedAccounts;
@@ -34,3 +35,7 @@ exports.exchangePublicToken = exchangePublicToken;
 
 // Export the stripe functions
 exports.createPaymentIntent = createPaymentIntent;
+
+// Export the transaction ledger functions
+exports.triggerImmediateTransfer = triggerImmediateTransfer;
+exports.scheduleDailyTransfer = scheduleDailyTransfer;
