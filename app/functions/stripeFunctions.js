@@ -57,7 +57,7 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
       const userId = 'd39WT9V0IWRIlKxbT6RIy1joZaT2';
-      const dateString = 'August 4 2024';
+      const dateString = 'August 2 2024';
       console.log(`Starting create payment intent... user_id: ${userId}, dateString: ${dateString}`);
 
       const totalRoundup = await CalculateRoundups(userId, dateString);
