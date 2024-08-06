@@ -13,17 +13,13 @@ const CalculateRoundups = async (userId, dateString) => {
   try {
     console.log('Starting try block');
     const db = admin.firestore();
-    console.log('db acquired');
     const docRef = db.collection('users').doc(userId).collection('transactions').doc(dateString);
-    console.log('doc reffed');
     const doc = await docRef.get();
-    console.log('docref.get awaited');
 
     if (!doc.exists) {
       console.log(`No transactions found for ${dateString}`);
       return 0;
     }
-    console.log('doc exists');
 
     const data = doc.data();
     let totalRoundup = 0;
@@ -31,10 +27,8 @@ const CalculateRoundups = async (userId, dateString) => {
     // Iterate over the transaction fields
     for (const key in data) {
       console.log(`key: ${key}`);
-      console.log(`forloop, total roundup: ${totalRoundup}`);
       if (data.hasOwnProperty(key)) {
         const transaction = data[key];
-        console.log(`transaction: ${transaction}`);
         console.log(`transaction roundup amount: ${transaction.round_up}`);
         // Add the roundup_amount to the total, ensuring it's treated as a number
         totalRoundup += parseFloat(transaction.round_up);
@@ -48,7 +42,7 @@ const CalculateRoundups = async (userId, dateString) => {
   }
 };
 
-const updateBankAccount = async (userLogs, userId, dateString, totalRoundup) => {
+const updateBankAccount = async (userId, dateString, totalRoundup) => {
   try {
     const db = admin.firestore();
     const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
@@ -67,23 +61,22 @@ const updateBankAccount = async (userLogs, userId, dateString, totalRoundup) => 
         balance: newBalance,
         received: newReceived,
       });
+      console.log("balance and received updated");
 
-      userLogs[userId] = {
-        total_roundup: totalRoundup,
+      const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
+      const dailyLogDoc = await transaction.get(dailyLogRef);
+
+      const userLog = {
+        [`${userId}.total_roundup`]: totalRoundup
       };
 
-      // const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
-      // const dailyLogDoc = await transaction.get(dailyLogRef);
-
-      // const userLog = {
-      //   [`${userId}.total_roundup`]: totalRoundup
-      // };
-
-      // if (dailyLogDoc.exists) {
-      //   transaction.update(dailyLogRef, userLog);
-      // } else {
-      //   transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
-      // }
+      if (dailyLogDoc.exists) {
+        transaction.update(dailyLogRef, userLog);
+        console.log('daily_log updated');
+      } else {
+        transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
+        console.log('daily_log created');
+      }
     });
 
     console.log(`Bank account updated with amount: ${totalRoundup}`);
@@ -106,12 +99,9 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
       }
 
       const results = [];
-      const userLogs = {};
 
       for (const userDoc of usersSnapshot.docs) {
         const userId = userDoc.id;
-        // const userData = userDoc.data();
-        // const username = userData.username;
         const totalRoundup = await CalculateRoundups(userId, dateString);
 
         if (totalRoundup === 0) {
@@ -122,7 +112,7 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
         const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
 
         // Update the bank account before creating the payment intent
-        await updateBankAccount(userLogs, userId, dateString, roundToTenthRoundup);
+        await updateBankAccount(userId, dateString, roundToTenthRoundup);
 
         const amountInCents = Math.round(roundToTenthRoundup * 100);
         const paymentIntent = await stripe.paymentIntents.create({
@@ -134,14 +124,18 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
         console.log(`Payment intent created for user ${userId}`);
       }
 
-      const dailyLog = {
-        total_roundup_allUsers: totalRoundupAllUsers,
-        ...userLogs,
+      const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
+
+      const userLog = {
+        [`${userId}.total_roundup`]: totalRoundup
       };
 
-      const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
-      const logRef = holdingAccountRef.collection('daily_logs').doc(dateToProcess);
-      await logRef.set(dailyLog);
+      const dailyLogDoc = await transaction.get(dailyLogRef);
+      if (dailyLogDoc.exists) {
+        transaction.update(dailyLogRef, userLog);
+      } else {
+        transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
+      }
 
       res.status(200).send(results);
     } catch (error) {
