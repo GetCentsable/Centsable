@@ -38,6 +38,7 @@ const CalculateRoundups = async (userId, dateString) => {
 };
 
 const updateBankAccount = async (userId, dateString, totalRoundup) => {
+  console.log(`Starting updateBankAccount...\nuser_id: ${userId}, dateString: ${dateString}, totalRoundup: ${}`);
   try {
     const db = admin.firestore();
     const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
@@ -102,7 +103,9 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
           continue;
         }
 
+        console.log(`totalRoundup pre tenthrounding: ${totalRoundup}`);
         const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
+        console.log(`roundToTenthRoundup post tenthrounding: ${roundToTenthRoundup}`);
 
         // Update the bank account before creating the payment intent
         await updateBankAccount(userId, dateString, roundToTenthRoundup);
