@@ -39,51 +39,43 @@ const transferDailyDonations = async (userId) => {
 
     if (totalTransactionAmount > 0) {
       const dailyLog = {
+        user_id: userId,
+        date: dateString,
         total_roundup_allUsers: totalTransactionAmount,
         distributions: [],
       };
 
-      let remainingAmount = totalTransactionAmount;
-
-      userData.recipients.forEach((recipient, index) => {
-        let transferAmount = parseFloat(((totalTransactionAmount * recipient.percentage) / 100).toFixed(2));
-        
-        // If it's the last recipient, allocate the remaining amount to avoid issues with rounding.
-        if (index === userData.recipients.length - 1) {
-          transferAmount = remainingAmount;
-        } else {
-          remainingAmount -= transferAmount;
-        }
-
+      for (const recipient of userData.recipients) {
         const recipientRef = db.collection('recipients').doc(recipient.recipient_id);
-        recipientRef.get().then(async (recipientDoc) => {
-          if (recipientDoc.exists) {
-            // Update the recipient's money received
-            await recipientRef.update({
-              money_received: admin.firestore.FieldValue.increment(transferAmount),
-            });
+        const recipientDoc = await recipientRef.get();
 
-            // Update the holding account balance and paid amount
-            await holdingAccountRef.update({
-              balance: admin.firestore.FieldValue.increment(-transferAmount),
-              paid: admin.firestore.FieldValue.increment(transferAmount),
-            });
+        if (recipientDoc.exists) {
+          const transferAmount = (totalTransactionAmount * recipient.percentage) / 100;
 
-            // Log the transaction for the recipient
-            await logTransaction(userId, recipient.recipient_id, transferAmount, 'debit');
+          // Update the recipient's money received
+          await recipientRef.update({
+            money_received: admin.firestore.FieldValue.increment(transferAmount),
+          });
 
-            console.log(`Transferred ${transferAmount} from holding account to ${recipientDoc.data().name}`);
+          // Update the holding account balance and paid amount
+          await holdingAccountRef.update({
+            balance: admin.firestore.FieldValue.increment(-transferAmount),
+            paid: admin.firestore.FieldValue.increment(transferAmount),
+          });
 
-            // Add to daily log
-            dailyLog.distributions.push({
-              user_id: userId,
-              recipient_id: recipient.recipient_id,
-              recipient_name: recipientDoc.data().name,
-              transfer_amount: transferAmount,
-            });
-          }
-        });
-      });
+          // Log the transaction for the recipient
+          await logTransaction(userId, recipient.recipient_id, transferAmount, 'debit');
+
+          console.log(`Transferred ${transferAmount} from holding account to ${recipientDoc.data().name}`);
+
+          // Add to daily log
+          dailyLog.distributions.push({
+            recipient_id: recipient.recipient_id,
+            recipient_name: recipientDoc.data().name,
+            transfer_amount: transferAmount,
+          });
+        }
+      }
 
       // Store the daily log
       const logRef = holdingAccountRef.collection('daily_logs').doc(dateString);
@@ -123,3 +115,17 @@ exports.triggerImmediateTransfer = functions.https.onRequest(async (req, res) =>
 
   res.status(200).send('Immediate transfer job completed');
 });
+
+// Schedule the transfer function to run at 0200 daily
+/*
+exports.scheduleDailyTransfer = functions.pubsub.schedule('2:00').timeZone('America/Chicago').onRun(async (context) => {
+  const usersSnapshot = await db.collection('users').get();
+  
+  usersSnapshot.forEach(doc => {
+    const userId = doc.id;
+    transferDailyDonations(userId);
+  });
+
+  console.log('Daily transfer job completed');
+});
+*/
