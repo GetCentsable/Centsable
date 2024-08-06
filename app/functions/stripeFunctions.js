@@ -60,8 +60,8 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
         throw new Error('Bank account document does not exist.');
       }
 
-      const newBalance = (bankAccountDoc.data().balance || 0) + totalRoundup;
-      const newReceived = (bankAccountDoc.data().received || 0) + totalRoundup;
+      const newBalance = (bankAccountDoc.data().balance || 0) + amount;
+      const newReceived = (bankAccountDoc.data().received || 0) + amount;
 
       transaction.update(bankAccountRef, {
         balance: newBalance,
@@ -78,20 +78,17 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
       };
 
       if (dailyLogDoc.exists) {
-        console.log(`Updating existing daily log for ${dateString}`);
         transaction.update(dailyLogRef, userLog);
       } else {
-        console.log(`Creating new daily log for ${dateString}`);
         transaction.set(dailyLogRef, userLog);
       }
     });
 
-    console.log(`Bank account updated with total roundup: ${totalRoundup}`);
+    console.log(`Bank account updated with amount: ${amount}`);
   } catch (error) {
     console.error('Error updating bank account:', error);
   }
 };
-
 
 exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
   console.log('createpayment intent outside cors');
