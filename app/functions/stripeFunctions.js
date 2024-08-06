@@ -38,7 +38,7 @@ const CalculateRoundups = async (userId, dateString) => {
 };
 
 const updateBankAccount = async (userId, dateString, totalRoundup) => {
-  console.log(`Starting updateBankAccount...\nuser_id: ${userId}, dateString: ${dateString}, totalRoundup: ${}`);
+  console.log(`Starting updateBankAccount...\nuser_id: ${userId}, dateString: ${dateString}, totalRoundup: ${totalRoundup}`);
   try {
     const db = admin.firestore();
     const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
