@@ -28,7 +28,7 @@ const transferWeeklyDonations = async () => {
 
       // Loop through the past 7 days
       for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const dateFormatted = `${d.getFullYear()} ${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getDate()).padStart(2, '0')}`;
+        const dateFormatted = `${d.toLocaleString('default', { month: 'long' })} ${d.getDate()} ${d.getFullYear()}`;
         const transactionsRef = userDoc.ref.collection('transactions').doc(dateFormatted);
         const transactionsDoc = await transactionsRef.get();
 
