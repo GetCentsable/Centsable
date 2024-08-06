@@ -60,8 +60,8 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
         throw new Error('Bank account document does not exist.');
       }
 
-      const newBalance = (bankAccountDoc.data().balance || 0) + amount;
-      const newReceived = (bankAccountDoc.data().received || 0) + amount;
+      const newBalance = (bankAccountDoc.data().balance || 0) + totalRoundup;
+      const newReceived = (bankAccountDoc.data().received || 0) + totalRoundup;
 
       transaction.update(bankAccountRef, {
         balance: newBalance,
@@ -72,19 +72,17 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
       const dailyLogDoc = await transaction.get(dailyLogRef);
 
       const userLog = {
-        [userId]: {
-          total_roundup: totalRoundup,
-        },
+        [`${userId}.total_roundup`]: totalRoundup
       };
 
       if (dailyLogDoc.exists) {
         transaction.update(dailyLogRef, userLog);
       } else {
-        transaction.set(dailyLogRef, userLog);
+        transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
       }
     });
 
-    console.log(`Bank account updated with amount: ${amount}`);
+    console.log(`Bank account updated with amount: ${totalRoundup}`);
   } catch (error) {
     console.error('Error updating bank account:', error);
   }
