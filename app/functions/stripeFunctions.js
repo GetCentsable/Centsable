@@ -1,21 +1,17 @@
 const { admin } = require('./firebaseAdminConfig');
 const functions = require('firebase-functions');
+const cors = require('cors')({origin: true});
 // import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 // import { app } from 'firebase-admin';
-const cors = require('cors')({origin: true});
 
 const STRIPE_SECRET_KEY = functions.config().stripe.secret_key;
-
-// REMOVE SECRET KEY FROM PUBLIC VIEW
 const stripe = require("stripe")(STRIPE_SECRET_KEY);
 
-// ROUND UP VERSION -----------------------------------------------------------------------------------------
 
 const CalculateRoundups = async (userId, dateString) => {
   console.log(`Starting CalculateRoundups...\nuser_id: ${userId}, dateString: ${dateString}`);
   try {
     console.log('Starting try block');
-    // const db = getFirestore(app);
     const db = admin.firestore();
     console.log('db acquired');
     const docRef = db.collection('users').doc(userId).collection('transactions').doc(dateString);
@@ -56,32 +52,39 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
   console.log('createpayment intent outside cors');
   cors(req, res, async () => {
     try {
-      const userId = 'k3t0Mlx7QbbAmMwyZf8ruJPmdxG2';
       const dateString = '2024-07-23';
-      console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
+      const db = admin.firestore();
+      const usersSnapshot = await db.collection('users').get();
 
-      const totalRoundup = await CalculateRoundups(userId, dateString);
-      console.log(`Total Roundup Calculated: ${totalRoundup}`);
-
-      if (totalRoundup === 0) {
-        return res.status(400).send({ error: 'No transactions found or total roundup is zero.' });
+      if (usersSnapshot.empty) {
+        console.log('No users found.');
+        return res.status(400).send({ error: 'No users found.' });
       }
 
+      const results = [];
 
-      const amountInCents = Math.round(totalRoundup * 100);
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+        const username = userDoc.username;
+        const totalRoundup = await CalculateRoundups(userId, dateString);
 
-      console.log(`Amount in Cents: ${amountInCents}`);
+        if (totalRoundup === 0) {
+          results.push({ userId, error: 'No transactions found or total roundup is zero.' });
+          continue;
+        }
 
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amountInCents,
+        const amountInCents = Math.round(totalRoundup * 100);
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: amountInCents,
+          currency: "usd",
+          customer: username
+        });
 
-        currency: "usd",
-      });
-      console.log('payment intent created');
-  
-      res.status(200).send({
-        clientSecret: paymentIntent.client_secret,
-      });
+        results.push({ userId, clientSecret: paymentIntent.client_secret });
+        console.log(`Payment intent created for user ${userId}`);
+      }
+
+      res.status(200).send(results);
     } catch (error) {
       res.status(500).send({ error: error.message });
     }
