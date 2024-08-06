@@ -65,7 +65,8 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
 
       for (const userDoc of usersSnapshot.docs) {
         const userId = userDoc.id;
-        const username = userDoc.username;
+        const userData = userDoc.data();
+        const username = userData.username;
         const totalRoundup = await CalculateRoundups(userId, dateString);
 
         if (totalRoundup === 0) {
