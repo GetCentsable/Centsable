@@ -116,41 +116,13 @@ const generateMonthlyLogs = async () => {
     };
 
     dailyLogsSnapshot.forEach((dailyLogDoc) => {
-      const dailyLogData = dailyLogDoc.data();
       const logDate = dailyLogDoc.id;
+      const dailyLogData = dailyLogDoc.data();
 
-      // Store the daily log under its date in the monthly log
-      monthlyLog.daily_logs[logDate] = {};
-
-      // Aggregate data into the monthly log
-      for (const userId in dailyLogData) {
-        if (userId !== 'total_roundup_allUsers') {
-          if (!monthlyLog[userId]) {
-            monthlyLog[userId] = {
-              total_roundup: 0,
-              distributions: [],
-            };
-          }
-
-          // Add user-specific data to the monthly log
-          monthlyLog.daily_logs[logDate][userId] = dailyLogData[userId];
-
-          monthlyLog[userId].total_roundup += dailyLogData[userId].total_roundup;
-
-          dailyLogData[userId].distributions.forEach((dist) => {
-            const existingDistribution = monthlyLog[userId].distributions.find(d => d.recipient_id === dist.recipient_id);
-            if (existingDistribution) {
-              existingDistribution.transfer_amount += dist.transfer_amount;
-            } else {
-              monthlyLog[userId].distributions.push({
-                recipient_id: dist.recipient_id,
-                recipient_name: dist.recipient_name,
-                transfer_amount: dist.transfer_amount,
-              });
-            }
-          });
-        }
-      }
+      // Include only the relevant daily log data without duplicating user information
+      monthlyLog.daily_logs[logDate] = {
+        ...dailyLogData,
+      };
 
       // Aggregate total roundup for all users
       monthlyLog.total_roundup_allUsers += dailyLogData.total_roundup_allUsers || 0;
