@@ -24,11 +24,12 @@ const transferWeeklyDonations = async () => {
       const userId = userDoc.id;
       const userData = userDoc.data();
       let userTotalRoundup = 0;
+      const userDistributions = []; // Store each user's distributions
 
       // Loop through the past 7 days
       for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const transactionsRef = userDoc.ref.collection('transactions').doc(dateString);
+        const dateFormatted = `${d.getFullYear()} ${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getDate()).padStart(2, '0')}`;
+        const transactionsRef = userDoc.ref.collection('transactions').doc(dateFormatted);
         const transactionsDoc = await transactionsRef.get();
 
         if (transactionsDoc.exists) {
@@ -42,11 +43,6 @@ const transferWeeklyDonations = async () => {
 
       // If the user has roundup to distribute
       if (userTotalRoundup > 0) {
-        const userLog = {
-          total_roundup: userTotalRoundup,
-          distributions: [],
-        };
-
         totalRoundupAllUsers += userTotalRoundup;
 
         // Distribute the roundup amount to recipients
@@ -74,7 +70,7 @@ const transferWeeklyDonations = async () => {
             console.log(`Transferred ${transferAmount} from holding account to ${recipientDoc.data().name}`);
 
             // Add to the user's log
-            userLog.distributions.push({
+            userDistributions.push({
               recipient_id: recipient.recipient_id,
               recipient_name: recipientDoc.data().name,
               transfer_amount: transferAmount,
@@ -83,11 +79,14 @@ const transferWeeklyDonations = async () => {
         }
 
         // Store the user's log in the weekly log
-        weeklyLog[userId] = userLog;
+        weeklyLog[userId] = {
+          total_roundup: userTotalRoundup,
+          distributions: userDistributions,
+        };
       }
     }
 
-    // Store the total roundup for all users in the weekly log
+    // Add total roundup for all users to the log
     weeklyLog.total_roundup_allUsers = totalRoundupAllUsers;
 
     // Store the weekly log in the holding account's weekly_logs collection
