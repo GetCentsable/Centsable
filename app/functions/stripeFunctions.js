@@ -58,10 +58,10 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
       const newReceived = (bankAccountDoc.data().received || 0) + totalRoundup;
       console.log(`newBalance post +roundup: ${newBalance}`);
       console.log(`newReceived post +roundup: ${newBalance}`);
-      const roundNewBalance = Math.floor(num * 100) / 100;
-      const roundNewReceived = Math.floor(num * 100) / 100;
-      console.log(`roundNewBalance post math.floor: ${newBalance}`);
-      console.log(`roundNewReceived post math.floor: ${newBalance}`);
+      const roundNewBalance = Math.floor(newBalance * 100) / 100;
+      const roundNewReceived = Math.floor(newReceived * 100) / 100;
+      console.log(`roundNewBalance post math.floor: ${roundNewBalance}`);
+      console.log(`roundNewReceived post math.floor: ${roundNewReceived}`);
 
       transaction.update(bankAccountRef, {
         balance: roundNewBalance,
