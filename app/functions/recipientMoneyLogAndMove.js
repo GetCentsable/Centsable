@@ -115,8 +115,8 @@ const generateMonthlyLogs = async () => {
       .get();
 
     let monthlyLog = {
-      daily_logs: {}, // To store each daily log
       total_roundup_allUsers: 0,
+      daily_logs: {}, // To store each daily log
     };
 
     dailyLogsSnapshot.forEach((dailyLogDoc) => {
