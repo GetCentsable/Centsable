@@ -52,8 +52,12 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
         throw new Error('Bank account document does not exist.');
       }
 
+      console.log(`bankAccountDoc.data().balance pre +roundup: ${bankAccountDoc.data().balance}`);
+      console.log(`bankAccountDoc.data().received pre +roundup: ${bankAccountDoc.data().received}`);
       const newBalance = (bankAccountDoc.data().balance || 0) + totalRoundup;
       const newReceived = (bankAccountDoc.data().received || 0) + totalRoundup;
+      console.log(`newBalance post +roundup: ${newBalance}`);
+      console.log(`newReceived post +roundup: ${newBalance}`);
 
       transaction.update(bankAccountRef, {
         balance: newBalance,
@@ -103,9 +107,9 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
           continue;
         }
 
-        console.log(`totalRoundup pre tenthrounding: ${totalRoundup}`);
+        // console.log(`totalRoundup pre tenthrounding: ${totalRoundup}`);
         const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
-        console.log(`roundToTenthRoundup post tenthrounding: ${roundToTenthRoundup}`);
+        // console.log(`roundToTenthRoundup post tenthrounding: ${roundToTenthRoundup}`);
 
         // Update the bank account before creating the payment intent
         await updateBankAccount(userId, dateString, roundToTenthRoundup);
