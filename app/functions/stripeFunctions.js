@@ -37,7 +37,9 @@ const CalculateRoundups = async (userId, dateString) => {
         console.log(`transaction: ${transaction}`);
         console.log(`transaction roundup amount: ${transaction.amount}`);
         // Add the roundup_amount to the total, ensuring it's treated as a number
-        totalRoundup += parseFloat(transaction.amount);
+        if (parseFloat(transaction.amount) > 0) {
+          totalRoundup += parseFloat(transaction.amount);
+        }
       }
     }
     console.log(`Total Roundup for ${dateString}: ${totalRoundup}`);
@@ -45,6 +47,33 @@ const CalculateRoundups = async (userId, dateString) => {
   } catch (error) {
     console.error('Error fetching transactions:', error);
     return 0;
+  }
+};
+
+const updateBankAccount = async (amount) => {
+  try {
+    const db = admin.firestore();
+    const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
+
+    await db.runTransaction(async (transaction) => {
+      const bankAccountDoc = await transaction.get(bankAccountRef);
+
+      if (!bankAccountDoc.exists) {
+        throw new Error('Bank account document does not exist.');
+      }
+
+      const newBalance = (bankAccountDoc.data().balance || 0) + amount;
+      const newReceived = (bankAccountDoc.data().received || 0) + amount;
+
+      transaction.update(bankAccountRef, {
+        balance: newBalance,
+        received: newReceived,
+      });
+    });
+
+    console.log(`Bank account updated with amount: ${amount}`);
+  } catch (error) {
+    console.error('Error updating bank account:', error);
   }
 };
 
@@ -74,11 +103,13 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
           continue;
         }
 
+        // Update the bank account before creating the payment intent
+        await updateBankAccount(totalRoundup);
+
         const amountInCents = Math.round(totalRoundup * 100);
         const paymentIntent = await stripe.paymentIntents.create({
           amount: amountInCents,
           currency: "usd",
-          customer: username
         });
 
         results.push({ userId, clientSecret: paymentIntent.client_secret });
