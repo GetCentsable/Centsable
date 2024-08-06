@@ -24,27 +24,36 @@ const generateDailyLogs = async () => {
 
       console.log(`Processing user: ${userId}`);
 
+      // Get the transactions for the specific date
       const transactionsSnapshot = await userDoc.ref
         .collection('transactions')
-        .where('date', '==', dateToProcess)
+        .doc(dateToProcess)
         .get();
 
-      if (!transactionsSnapshot.empty) {
+      if (transactionsSnapshot.exists) {
         console.log(`Transactions found for user ${userId} on ${dateToProcess}`);
 
-        transactionsSnapshot.forEach((transactionDoc) => {
-          const transaction = transactionDoc.data();
+        const transactionsData = transactionsSnapshot.data();
+        for (const [transactionId, transaction] of Object.entries(transactionsData)) {
           const roundupAmount = Math.abs(transaction.amount - Math.floor(transaction.amount)); // Calculate roundup
           userTotalRoundup += roundupAmount;
-        });
+        }
 
         // Distribute the roundup amount to recipients
+        let remainingRoundupAmount = userTotalRoundup;
         for (const recipient of userData.recipients) {
           const recipientRef = db.collection('recipients').doc(recipient.recipient_id);
           const recipientDoc = await recipientRef.get();
 
           if (recipientDoc.exists) {
-            const transferAmount = (userTotalRoundup * recipient.percentage) / 100;
+            let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
+
+            // Handle rounding errors by ensuring the last recipient gets any leftover amount
+            if (recipient === userData.recipients[userData.recipients.length - 1]) {
+              transferAmount = remainingRoundupAmount;
+            } else {
+              remainingRoundupAmount -= transferAmount;
+            }
 
             // Add to the user's distribution log
             userDistributions.push({
