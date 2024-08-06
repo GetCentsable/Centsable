@@ -39,29 +39,34 @@ const generateDailyLogs = async () => {
           userTotalRoundup += roundupAmount;
         }
 
-        // Distribute the roundup amount to recipients
-        let remainingRoundupAmount = userTotalRoundup;
-        for (const recipient of userData.recipients) {
-          const recipientRef = db.collection('recipients').doc(recipient.recipient_id);
-          const recipientDoc = await recipientRef.get();
+        // Ensure recipients field exists and is an array
+        if (Array.isArray(userData.recipients)) {
+          // Distribute the roundup amount to recipients
+          let remainingRoundupAmount = userTotalRoundup;
+          for (const recipient of userData.recipients) {
+            const recipientRef = db.collection('recipients').doc(recipient.recipient_id);
+            const recipientDoc = await recipientRef.get();
 
-          if (recipientDoc.exists) {
-            let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
+            if (recipientDoc.exists) {
+              let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
 
-            // Handle rounding errors by ensuring the last recipient gets any leftover amount
-            if (recipient === userData.recipients[userData.recipients.length - 1]) {
-              transferAmount = remainingRoundupAmount;
-            } else {
-              remainingRoundupAmount -= transferAmount;
+              // Handle rounding errors by ensuring the last recipient gets any leftover amount
+              if (recipient === userData.recipients[userData.recipients.length - 1]) {
+                transferAmount = remainingRoundupAmount;
+              } else {
+                remainingRoundupAmount -= transferAmount;
+              }
+
+              // Add to the user's distribution log
+              userDistributions.push({
+                recipient_id: recipient.recipient_id,
+                recipient_name: recipient.recipient_name,
+                transfer_amount: transferAmount,
+              });
             }
-
-            // Add to the user's distribution log
-            userDistributions.push({
-              recipient_id: recipient.recipient_id,
-              recipient_name: recipient.recipient_name,
-              transfer_amount: transferAmount,
-            });
           }
+        } else {
+          console.log(`No valid recipients found for user ${userId}`);
         }
 
         totalRoundupAllUsers += userTotalRoundup;
