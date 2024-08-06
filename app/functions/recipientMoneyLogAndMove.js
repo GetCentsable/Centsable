@@ -120,7 +120,7 @@ const generateMonthlyLogs = async () => {
       const logDate = dailyLogDoc.id;
 
       // Store the daily log under its date in the monthly log
-      monthlyLog.daily_logs[logDate] = dailyLogData;
+      monthlyLog.daily_logs[logDate] = {};
 
       // Aggregate data into the monthly log
       for (const userId in dailyLogData) {
@@ -128,20 +128,26 @@ const generateMonthlyLogs = async () => {
           if (!monthlyLog[userId]) {
             monthlyLog[userId] = {
               total_roundup: 0,
-              distributions: {},
+              distributions: [],
             };
           }
+
+          // Add user-specific data to the monthly log
+          monthlyLog.daily_logs[logDate][userId] = dailyLogData[userId];
 
           monthlyLog[userId].total_roundup += dailyLogData[userId].total_roundup;
 
           dailyLogData[userId].distributions.forEach((dist) => {
-            if (!monthlyLog[userId].distributions[dist.recipient_id]) {
-              monthlyLog[userId].distributions[dist.recipient_id] = {
+            const existingDistribution = monthlyLog[userId].distributions.find(d => d.recipient_id === dist.recipient_id);
+            if (existingDistribution) {
+              existingDistribution.transfer_amount += dist.transfer_amount;
+            } else {
+              monthlyLog[userId].distributions.push({
+                recipient_id: dist.recipient_id,
                 recipient_name: dist.recipient_name,
-                transfer_amount: 0,
-              };
+                transfer_amount: dist.transfer_amount,
+              });
             }
-            monthlyLog[userId].distributions[dist.recipient_id].transfer_amount += dist.transfer_amount;
           });
         }
       }
@@ -165,6 +171,7 @@ exports.triggerMonthlyLogs = functions.https.onRequest(async (req, res) => {
   await generateMonthlyLogs();
   res.status(200).send('Monthly logs generated successfully');
 });
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
