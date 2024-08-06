@@ -160,26 +160,32 @@ const processMonthlyLog = async () => {
 
     const monthlyLogData = monthlyLogDoc.data();
 
-    for (const userId in monthlyLogData) {
-      if (userId !== 'total_roundup_allUsers') {
-        const userLog = monthlyLogData[userId];
+    // Iterate through each daily log in the monthly log
+    for (const logDate in monthlyLogData.daily_logs) {
+      const dailyLog = monthlyLogData.daily_logs[logDate];
 
-        for (const recipientId in userLog.distributions) {
-          const recipientData = userLog.distributions[recipientId];
+      // Iterate through each user's log within the daily log
+      for (const userId in dailyLog) {
+        if (userId !== 'total_roundup_allUsers') {
+          const userLog = dailyLog[userId];
 
-          // Update the recipient's money received
-          const recipientRef = db.collection('recipients').doc(recipientId);
-          await recipientRef.update({
-            money_received: admin.firestore.FieldValue.increment(recipientData.transfer_amount),
-          });
+          // Process each recipient distribution for the user
+          for (const distribution of userLog.distributions) {
+            const recipientRef = db.collection('recipients').doc(distribution.recipient_id);
 
-          // Update the holding account balance and paid amount
-          await holdingAccountRef.update({
-            balance: admin.firestore.FieldValue.increment(-recipientData.transfer_amount),
-            paid: admin.firestore.FieldValue.increment(recipientData.transfer_amount),
-          });
+            // Update the recipient's money received
+            await recipientRef.update({
+              money_received: admin.firestore.FieldValue.increment(distribution.transfer_amount),
+            });
 
-          console.log(`Transferred ${recipientData.transfer_amount} to ${recipientData.recipient_name}`);
+            // Update the holding account balance and paid amount
+            await holdingAccountRef.update({
+              balance: admin.firestore.FieldValue.increment(-distribution.transfer_amount),
+              paid: admin.firestore.FieldValue.increment(distribution.transfer_amount),
+            });
+
+            console.log(`Transferred ${distribution.transfer_amount} to ${distribution.recipient_name} for user ${userId}`);
+          }
         }
       }
     }
