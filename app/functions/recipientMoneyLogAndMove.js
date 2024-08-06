@@ -173,8 +173,24 @@ const processMonthlyLog = async () => {
         if (userId !== 'total_roundup_allUsers') {
           const userLog = dailyLog[userId];
 
-          // Process each recipient distribution for the user
-          for (const distribution of userLog.distributions) {
+          // Adjust transfer amounts to avoid splitting pennies
+          let totalTransferAmount = userLog.total_roundup;
+          let remainingAmount = totalTransferAmount;
+
+          for (const [index, distribution] of userLog.distributions.entries()) {
+            let transferAmount = (totalTransferAmount * distribution.percentage) / 100;
+            transferAmount = parseFloat(transferAmount.toFixed(2)); // Round to two decimal places
+
+            if (index === 0) {
+              // The first recipient gets any rounding differences
+              transferAmount = parseFloat(remainingAmount.toFixed(2));
+            } else {
+              remainingAmount -= transferAmount;
+            }
+
+            distribution.transfer_amount = transferAmount;
+
+            // Process each recipient distribution for the user
             const recipientRef = db.collection('recipients').doc(distribution.recipient_id);
 
             // Update the recipient's money received
