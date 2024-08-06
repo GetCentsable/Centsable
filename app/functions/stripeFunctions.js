@@ -39,9 +39,9 @@ const CalculateRoundups = async (userId, dateString) => {
       if (data.hasOwnProperty(key)) {
         const transaction = data[key];
         console.log(`transaction: ${transaction}`);
-        console.log(`transaction roundup amount: ${transaction.roundup_amount}`);
+        console.log(`transaction roundup amount: ${transaction.amount}`);
         // Add the roundup_amount to the total, ensuring it's treated as a number
-        totalRoundup += parseFloat(transaction.roundup_amount);
+        totalRoundup += parseFloat(transaction.amount);
       }
     }
     console.log(`Total Roundup for ${dateString}: ${totalRoundup}`);
@@ -56,8 +56,8 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
   console.log('createpayment intent outside cors');
   cors(req, res, async () => {
     try {
-      const userId = 'd39WT9V0IWRIlKxbT6RIy1joZaT2';
-      const dateString = 'August 2 2024';
+      const userId = 'k3t0Mlx7QbbAmMwyZf8ruJPmdxG2';
+      const dateString = '2024-07-23';
       console.log(`Starting create payment intent...\nuser_id: ${userId}, dateString: ${dateString}`);
 
       const totalRoundup = await CalculateRoundups(userId, dateString);
