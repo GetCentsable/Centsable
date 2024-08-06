@@ -106,14 +106,21 @@ const generateMonthlyLogs = async () => {
   try {
     const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
     const dailyLogsSnapshot = await holdingAccountRef.collection('daily_logs')
-      .where('date', '>=', '2024-08-01') // Start of the month
-      .where('date', '<=', '2024-08-31') // End of the month
+      .where(admin.firestore.FieldPath.documentId(), '>=', '2024-08-01') // Start of the month
+      .where(admin.firestore.FieldPath.documentId(), '<=', '2024-08-31') // End of the month
       .get();
 
-    let monthlyLog = {};
+    let monthlyLog = {
+      daily_logs: {}, // To store each daily log
+      total_roundup_allUsers: 0,
+    };
 
     dailyLogsSnapshot.forEach((dailyLogDoc) => {
       const dailyLogData = dailyLogDoc.data();
+      const logDate = dailyLogDoc.id;
+
+      // Store the daily log under its date in the monthly log
+      monthlyLog.daily_logs[logDate] = dailyLogData;
 
       // Aggregate data into the monthly log
       for (const userId in dailyLogData) {
@@ -139,8 +146,8 @@ const generateMonthlyLogs = async () => {
         }
       }
 
-      // Aggregate total roundup
-      monthlyLog.total_roundup_allUsers = (monthlyLog.total_roundup_allUsers || 0) + dailyLogData.total_roundup_allUsers;
+      // Aggregate total roundup for all users
+      monthlyLog.total_roundup_allUsers += dailyLogData.total_roundup_allUsers || 0;
     });
 
     // Store the monthly log in the holding account's monthly_logs subcollection
