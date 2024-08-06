@@ -102,3 +102,62 @@ exports.getLinkedAccounts = functions.https.onRequest((req, res) => {
     }
   });
 });
+
+// Function gathers non sensitive user transaction
+// data and sends to front end
+exports.getUserTransactions = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      await authenticate(req, res, async () => {
+        try {
+          // Get the user's ID from the request
+          const uid = req.body.uid;
+
+          // Create a reference to the user's transactions sub-collection
+          const userTransCollectionRef = db.collection('users').doc(uid).collection('transactions');
+
+          // Get a snapshot of the collection to retrieve the data
+          const userTransCollectionSnap = await userTransCollectionRef.get();
+
+          // Create an object to hold the transactions data
+          const user_transactions = {};
+
+          // Loop through each document in the snapshot to gather transaction data
+          userTransCollectionSnap.forEach(doc => {
+            const transaction_date = doc.data();
+
+            // Loop through each transaction of a date to gather data needed
+            for (const [trans_id, transaction] of Object.entries(transaction_date)) {
+              // Check if transaction amount is 0 or negative to skip transaction
+              if (transaction.amount <= 0) {
+                continue;
+              }
+
+              // Object holds current transaction data we want to send to front end
+              const transaction_data = {
+                amount: transaction.amount,
+                date: transaction.date,
+                logo_url: transaction.logo_url,
+                merchant_name: transaction.merchant_name,
+                round_up: transaction.round_up,
+                website: transaction.website,
+              };
+
+              // Add the current transaction to the object returned
+              user_transactions[trans_id] = transaction_data;
+            }
+          });
+
+          // On success, send the transactions to the front end
+          res.status(200).send(user_transactions);
+        } catch (error) {
+          console.error('Error getting user transactions', error.response ? error.response.data : error.message);
+          res.status(500).send({ error: 'Error retrieving user transactions' });
+        }
+      });
+    } catch (error) {
+      console.error('Authentication error:', error);
+      res.status(403).send('Unauthorized');
+    }
+  });
+});

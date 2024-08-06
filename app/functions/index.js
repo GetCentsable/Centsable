@@ -21,13 +21,14 @@ const logger = require("firebase-functions/logger");
 
 
 // Import the functions from the other files
-const { getLinkedAccounts } = require('./frontendFunctions');
+const { getLinkedAccounts, getUserTransactions } = require('./frontendFunctions');
 const { createLinkToken, exchangePublicToken, loadAllUserTransactions } = require('./plaidFunctions');
 const { createPaymentIntent } = require('./stripeFunctions');
 const { triggerImmediateTransfer, scheduleDailyTransfer } = require('./transferDailyDonations');
 
 // Export the frontend functions
 exports.getLinkedAccounts = getLinkedAccounts;
+exports.getUserTransactions = getUserTransactions;
 
 // Export Plaid functions for API request
 exports.createLinkToken = createLinkToken;
