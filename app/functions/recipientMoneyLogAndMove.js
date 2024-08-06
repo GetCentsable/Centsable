@@ -1,3 +1,9 @@
+const { admin } = require('./firebaseAdminConfig');
+const functions = require('firebase-functions');
+const cors = require('cors')({ origin: true });
+
+const db = admin.firestore();
+
 const generateDailyLogs = async () => {
   try {
     const dateToProcess = '2024-08-05'; // Replace with new Date().toISOString().split('T')[0] for current date
@@ -18,12 +24,6 @@ const generateDailyLogs = async () => {
 
       console.log(`Processing user: ${userId}`);
 
-      // Check if recipients exists and is an array
-      if (!Array.isArray(userData.recipients)) {
-        console.error(`User ${userId} does not have valid recipients.`);
-        continue;
-      }
-
       // Get the transactions for the specific date
       const transactionsSnapshot = await userDoc.ref
         .collection('transactions')
@@ -35,7 +35,7 @@ const generateDailyLogs = async () => {
 
         const transactionsData = transactionsSnapshot.data();
         for (const [transactionId, transaction] of Object.entries(transactionsData)) {
-          const roundupAmount = Math.abs(transaction.amount - Math.floor(transaction.amount)); // Calculate roundup
+          const roundupAmount = transaction.round_up || 0; // Use the round_up field directly
           userTotalRoundup += roundupAmount;
         }
 
@@ -92,6 +92,13 @@ const generateDailyLogs = async () => {
     console.error('Error generating daily logs:', error);
   }
 };
+
+// Function to trigger the generation of daily logs
+exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
+  await generateDailyLogs();
+  res.status(200).send('Daily logs generated successfully');
+});
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
