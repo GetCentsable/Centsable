@@ -41,29 +41,28 @@ const generateDailyLogs = async () => {
 
         // Ensure recipients field exists and is an array
         if (Array.isArray(userData.recipients)) {
+          let remainingRoundupAmount = parseFloat(userTotalRoundup.toFixed(2));
+          let isFirstRecipient = true;
+
           // Distribute the roundup amount to recipients
-          let remainingRoundupAmount = userTotalRoundup;
           for (const recipient of userData.recipients) {
-            const recipientRef = db.collection('recipients').doc(recipient.recipient_id);
-            const recipientDoc = await recipientRef.get();
+            let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
+            transferAmount = parseFloat(transferAmount.toFixed(2));
 
-            if (recipientDoc.exists) {
-              let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
-
-              // Handle rounding errors by ensuring the last recipient gets any leftover amount
-              if (recipient === userData.recipients[userData.recipients.length - 1]) {
-                transferAmount = remainingRoundupAmount;
-              } else {
-                remainingRoundupAmount -= transferAmount;
-              }
-
-              // Add to the user's distribution log
-              userDistributions.push({
-                recipient_id: recipient.recipient_id,
-                recipient_name: recipient.recipient_name,
-                transfer_amount: transferAmount,
-              });
+            if (isFirstRecipient) {
+              // The first recipient gets any rounding differences
+              transferAmount = remainingRoundupAmount;
+              isFirstRecipient = false;
+            } else {
+              remainingRoundupAmount -= transferAmount;
             }
+
+            // Add to the user's distribution log
+            userDistributions.push({
+              recipient_id: recipient.recipient_id,
+              recipient_name: recipient.recipient_name,
+              transfer_amount: transferAmount,
+            });
           }
         } else {
           console.log(`No valid recipients found for user ${userId}`);
@@ -174,16 +173,18 @@ const processMonthlyLog = async () => {
           const userLog = dailyLog[userId];
 
           // Adjust transfer amounts to avoid splitting pennies
-          let totalTransferAmount = userLog.total_roundup;
+          let totalTransferAmount = parseFloat(userLog.total_roundup.toFixed(2));
           let remainingAmount = totalTransferAmount;
+          let isFirstRecipient = true;
 
           for (const [index, distribution] of userLog.distributions.entries()) {
             let transferAmount = (totalTransferAmount * distribution.percentage) / 100;
-            transferAmount = parseFloat(transferAmount.toFixed(2)); // Round to two decimal places
+            transferAmount = parseFloat(transferAmount.toFixed(2));
 
-            if (index === 0) {
+            if (isFirstRecipient) {
               // The first recipient gets any rounding differences
               transferAmount = parseFloat(remainingAmount.toFixed(2));
+              isFirstRecipient = false;
             } else {
               remainingAmount -= transferAmount;
             }
