@@ -6,7 +6,7 @@ const db = admin.firestore();
 
 const generateDailyLogs = async () => {
   try {
-    const dateToProcess = '2024-08-05'; // Replace with new Date().toISOString().split('T')[0] for current date
+    const dateToProcess = '2024-07-23'; // Replace with new Date().toISOString().split('T')[0] for current date
     console.log(`Processing transactions for date: ${dateToProcess}`);
 
     let totalRoundupAllUsers = 0;
