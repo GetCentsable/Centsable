@@ -4,6 +4,7 @@ import Landing from '../Landing/Landing.jsx'
 import UserContext from '../Context/UserContext.jsx';
 import { app } from '../Firebase/firebase';
 import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
+import { TransactionProvider } from '../Context/TransactionsContext.jsx';
 
 function App() {
   const { isLoggedIn, setIsLoggedIn, setUser } = useContext(UserContext);
@@ -50,7 +51,13 @@ function App() {
 
   return (
     <>
-      {isLoggedIn ? <Dashboard /> : <Landing />}
+      {isLoggedIn ? (
+        <TransactionProvider>
+          <Dashboard />
+        </TransactionProvider>
+      ) : (
+        <Landing />
+      )}
     </>
   );
 }

@@ -1,6 +1,7 @@
 const { admin } = require('./firebaseAdminConfig');
 const functions = require('firebase-functions');
 const cors = require('cors')({ origin: true });
+const { format, subDays } = require('date-fns');
 const { Configuration, PlaidApi, Products, PlaidEnvironments } = require('plaid');
 
 // Environment variables
@@ -193,4 +194,114 @@ exports.exchangePublicToken = functions.https.onRequest((req, res) => {
   });
 });
 
-// Function that loads user transactions from API for specified bank
+// Function that loads user transactions from API for specified
+// bank and user into the firestore db
+exports.loadAllUserTransactions = functions.https.onRequest(async (req, res) => {
+  try {
+    // Step 1:
+    // Get users_tokens collection reference
+    const userTokenCollectionRef = db.collection('users_tokens');
+
+    // Get all documents in the users_tokens collection
+    const userTokenSnapshot = await userTokenCollectionRef.get();
+
+    if (userTokenSnapshot.empty) {
+      console.log('Error finding users_tokens collection');
+      res.status(500).send('No users_tokens collection found');
+      return;
+    }
+
+    // Step 2:
+    // Loop through each user document, and get banks array for user
+    for (const doc of userTokenSnapshot.docs) {
+      // Retrieve document info for later user
+      const doc_id = doc.id;
+      const doc_data = doc.data();
+
+      // Step 3:
+      // For each doc loop through the user banks and make
+      // a get request with specified parameters
+      for (const bank of doc_data.banks) {
+        // Get the current date
+        const currentDate = new Date();
+        const formattedCurrentDate = format(currentDate, 'yyyy-MM-dd');
+
+        // Get the date 90 days prior
+        const priorDate = subDays(currentDate, 90);
+        const formattedPriorDate = format(priorDate, 'yyyy-MM-dd');
+
+        // Request parameters to be sent to API endpoint transactions/get
+        const transaction_get_request = {
+          access_token: bank.plaid_token,
+          start_date: formattedPriorDate,
+          end_date: formattedCurrentDate,
+        }
+
+        // Making request to transactions/get endpoint, passing in parameters
+        const transaction_response = await plaidClient.transactionsGet(transaction_get_request);
+
+        // Ensure request success
+        if (!transaction_response) {
+          console.log('Transaction get request failed');
+          continue; // Skip to the next iteration
+        }
+
+        // Pull transactions from response data
+        const transactions = transaction_response.data.transactions;
+
+        // Ensure transactions are not empty
+        if (transactions.length === 0) {
+          console.log('Transactions are empty');
+          continue; // Skip to the next iteration
+        }
+        
+        // Step 4:
+        // Find matching user doc in user collection and merge transactions
+        // ensuring duplicate transactions do not exist
+        
+        // Reference the users collection where the doc id matches users_tokens doc id
+        const usersDocRef = db.collection('users').doc(doc_id);
+
+        // Snapshot of the matching user doc
+        const userSnapshot = await usersDocRef.get();
+
+        if (!userSnapshot.exists) {
+          console.log('Error finding user in users collection');
+          continue; // Skip to the next iteration
+        }
+
+        // Loop through each transaction returned by plaid API,
+        // and add that transaction to the user's transactions
+        // sub-collection ordered by date
+        for (const transaction of transactions) {
+          // Check the transaction date to add to correct doc
+          const transactionDate = transaction.date;
+
+          // Create a reference to the transaction subcollection
+          const transactionDocRef = usersDocRef.collection('transactions').doc(transactionDate);
+
+          await transactionDocRef.set({
+            [transaction.transaction_id]: transaction,
+          }, { merge: true });
+        }
+
+        // Log success / debug log
+        console.log(`Transactions for user ${doc_id} updated successfully!`);
+      }
+    }
+
+    console.log('All user transactions have been loaded, Success!');
+    res.status(200).send({ success: true });
+  } catch (error) {
+    console.error('Error fetching users transactions:', error.response ? error.response.data : error.message);
+    res.status(500).send({ error: 'Error fetching user transactions' });
+  }
+});
+
+exports.loadAllUserTransactionsNightly = functions.pubsub.schedule('0 3 * * *')
+  .timeZone('America/Chicago')
+  .onRun((context) => {
+    console.log('This function runs every night at 3 AM Central Time.');
+    // Code to get user transactions nightly
+    return null;
+  });
