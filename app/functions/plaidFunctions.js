@@ -280,6 +280,50 @@ exports.loadAllUserTransactions = functions.https.onRequest(async (req, res) => 
           // Create a reference to the transaction subcollection
           const transactionDocRef = usersDocRef.collection('transactions').doc(transactionDate);
 
+          // Get the document data to check for existing transactions
+          const transactionDocSnapshot = await transactionDocRef.get();
+          const transactionData = transactionDocSnapshot.data();
+
+          // Initialize a flag to check if the transaction already exists
+          let transactionExists = false;
+
+          // Loop through each transaction in the document data
+          if (transactionData) {
+            for (const key in transactionData) {
+              const existingTransaction = transactionData[key];
+              if (
+                existingTransaction.name === transaction.name &&
+                existingTransaction.amount === transaction.amount &&
+                existingTransaction.merchant_name === transaction.merchant_name
+              ) {
+                transactionExists = true;
+                break;
+              }
+            }
+          }
+
+          // If the transaction already exists, skip to the next transaction
+          if (transactionExists) {
+            console.log(`Transaction ${transaction.transaction_id} already exists for user ${doc_id} on ${transactionDate}`);
+            continue;
+          }
+
+          // Round up dollar amount from transaction and store it in an attribute
+          const transaction_amount = transaction.amount;
+          let round_up = 0;
+
+          // Check if transaction amount is negative indicating a credit/refund
+          if (transaction_amount > 0) {
+            const nextWholeDollar = Math.ceil(transaction_amount);
+            round_up = nextWholeDollar - transaction_amount;
+
+            // Round to two decimal places
+            round_up = Math.round(round_up * 100) / 100;
+          }
+
+          // Add roundup attribute to the transaction object
+          transaction.round_up = round_up;
+
           await transactionDocRef.set({
             [transaction.transaction_id]: transaction,
           }, { merge: true });
@@ -294,10 +338,11 @@ exports.loadAllUserTransactions = functions.https.onRequest(async (req, res) => 
     res.status(200).send({ success: true });
   } catch (error) {
     console.error('Error fetching users transactions:', error.response ? error.response.data : error.message);
-    res.status(500).send({ error: 'Error fetching user transactions' });
+    res.status(500).send({ error: error, message: 'Error fetching user transactions' });
   }
 });
 
+// Sample function to load user transactions at 3 a.m.
 exports.loadAllUserTransactionsNightly = functions.pubsub.schedule('0 3 * * *')
   .timeZone('America/Chicago')
   .onRun((context) => {

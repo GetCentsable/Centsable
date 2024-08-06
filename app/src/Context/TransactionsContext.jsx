@@ -5,7 +5,7 @@ const TransactionContext = createContext();
 
 export const TransactionProvider = ({ children }) => {
   // Global states
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState({});
   const [transactionsLoaded, setTransactionsLoaded] = useState(false);
 
   // Transaction Provider passes user states to all children
