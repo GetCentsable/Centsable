@@ -18,6 +18,7 @@ const transferWeeklyDonations = async () => {
     const weeklyLog = {}; // To store the log for each user
 
     const usersSnapshot = await db.collection('users').get();
+    console.log(`Total users found: ${usersSnapshot.size}`);
 
     // Loop through each user
     for (const userDoc of usersSnapshot.docs) {
@@ -26,23 +27,31 @@ const transferWeeklyDonations = async () => {
       let userTotalRoundup = 0;
       const userDistributions = []; // Store each user's distributions
 
+      console.log(`Processing user: ${userId}`);
+
       // Loop through the past 7 days
       for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
         const dateFormatted = `${d.toLocaleString('default', { month: 'long' })} ${d.getDate()} ${d.getFullYear()}`;
+        console.log(`Checking transactions for date: ${dateFormatted}`);
+
         const transactionsRef = userDoc.ref.collection('transactions').doc(dateFormatted);
         const transactionsDoc = await transactionsRef.get();
 
         if (transactionsDoc.exists) {
+          console.log(`Transactions found for ${dateFormatted}`);
           const transactions = transactionsDoc.data();
           // Sum up the roundup amounts from all transactions for this day
           for (const transaction of Object.values(transactions)) {
             userTotalRoundup += transaction.roundup_amount || 0;
           }
+        } else {
+          console.log(`No transactions found for user ${userId} on ${dateFormatted}`);
         }
       }
 
       // If the user has roundup to distribute
       if (userTotalRoundup > 0) {
+        console.log(`Total roundup for user ${userId}: ${userTotalRoundup}`);
         totalRoundupAllUsers += userTotalRoundup;
 
         // Distribute the roundup amount to recipients
@@ -83,6 +92,8 @@ const transferWeeklyDonations = async () => {
           total_roundup: userTotalRoundup,
           distributions: userDistributions,
         };
+      } else {
+        console.log(`No roundup to distribute for user ${userId}`);
       }
     }
 
