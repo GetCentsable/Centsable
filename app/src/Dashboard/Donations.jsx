@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { faFilter, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import PieChart from '../Components/General/PieChart';
-import CommunitiesList from '../Components/General/CommunitiesList';
 import Header from '../Components/General/Header';
 import PieChartSection from '../Components/General/PieChartSection';
 import SummaryTable from '../Components/General/SummaryTable';
@@ -14,7 +12,7 @@ const Donations = ({ isUserDrawerOpen }) => {
   const [detailedData, setDetailedData] = useState({});
   const [weeklyTotal, setWeeklyTotal] = useState(0);
   const [mobileView, setMobileView] = useState('pie');
-  const [tabletView, setTabletView] = useState('summary');
+  const [desktopView, setDesktopView] = useState('summary');
 
   const communities = [
     { name: 'Animal Rescue Foundation', percentage: 30 },
@@ -71,21 +69,23 @@ const Donations = ({ isUserDrawerOpen }) => {
   const handleSummaryClick = (date) => {
     setSelectedDate(date);
     setMobileView('detail');
-    setTabletView('detail');
+    setDesktopView('detail');
   };
 
   const handleBackClick = () => {
-    
     if (mobileView === 'detail') {
       setMobileView('summary');
     } else if (mobileView === 'summary') {
       setMobileView('pie');
     }
-    setTabletView('summary');
+    
+    if (desktopView === 'detail') {
+      setDesktopView('summary');
+    }
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 pt-6">
       <Header
         pageTopic="Donations"
         supportingText="Customize and View Donations"
@@ -93,50 +93,53 @@ const Donations = ({ isUserDrawerOpen }) => {
         buttonText="Apply filter"
         isUserDrawerOpen={isUserDrawerOpen}
       />
-      {/* Mobile back button */}
-      {mobileView !== 'pie' && (
-        <button onClick={handleBackClick} className="mb-4 flex items-center text-red-500 md:hidden">
+      {/* Back button placeholder */}
+      <div className="h-4 mb-4">
+        {/* Mobile back button */}
+        <button 
+          onClick={handleBackClick} 
+          className={`md-lg:hidden flex items-center text-red-500 ${mobileView === 'pie' ? 'invisible' : ''}`}
+        >
           <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-          Back
+          {mobileView === 'detail' ? 'Back to Summary' : 'Back to Pie Chart'}
         </button>
-      )}
-      <div className="flex flex-col md:flex-row justify-center items-start space-y-6 md:space-y-0 md:space-x-6">
+  
+        {/* Desktop back button - only shown in detail view */}
+        <button 
+          onClick={handleBackClick} 
+          className={`hidden md-lg:flex items-center text-red-500 ${desktopView !== 'detail' ? 'invisible' : ''}`}
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+          Back to Summary
+        </button>
+      </div>
+      <div className={`grid gap-6 ${isUserDrawerOpen ? 'grid-cols-1' : 'grid-cols-1 md-lg:grid-cols-[auto,1fr]'}`}>
         {/* Pie Chart Column */}
-        <div className={`${mobileView === 'pie' ? 'block' : 'hidden'} md:block w-full md:w-80 lg:w-96`}>
-          <PieChartSection weeklyTotal={weeklyTotal} communities={communities} onClick={handlePieClick} />
+        <div className={`${mobileView === 'pie' ? 'block' : 'hidden'} md-lg:block w-full justify-self-center md-lg:justify-self-start`}>
+          <div className="w-full max-w-[90%] mx-auto md-lg:max-w-full">
+            <PieChartSection weeklyTotal={weeklyTotal} communities={communities} onClick={handlePieClick} />
+          </div>
         </div>
-
-        {/* Summary/Detail Column for Mobile, Tablet, and Desktop */}
-        <div className="w-full md:flex-1 lg:flex lg:space-x-6">
+  
+        {/* Summary/Detail Column */}
+        <div className="w-full">
           {/* Mobile View */}
-          <div className="md:hidden">
-            {mobileView === 'summary' && <SummaryTable data={summaryData} onRowClick={handleSummaryClick} selectedDate={selectedDate} />}
-            {mobileView === 'detail' && <DetailTable data={detailedData[selectedDate]} selectedDate={selectedDate} />}
+          <div className="md-lg:hidden">
+            {mobileView === 'summary' && (
+              <SummaryTable data={summaryData} onRowClick={handleSummaryClick} selectedDate={selectedDate} />
+            )}
+            {mobileView === 'detail' && (
+              <DetailTable data={detailedData[selectedDate]} selectedDate={selectedDate} />
+            )}
           </div>
           
-          {/* Tablet View */}
-          <div className="hidden md:block lg:hidden">
-            {/* Tablet back button */}
-            {tabletView === 'detail' && (
-              <button onClick={handleBackClick} className="mb-4 flex items-center text-red-500">
-                <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-                Back to Summary
-              </button>
-            )}
-            {tabletView === 'summary' ? 
-              <SummaryTable data={summaryData} onRowClick={handleSummaryClick} selectedDate={selectedDate} /> :
-              <DetailTable data={detailedData[selectedDate]} selectedDate={selectedDate} />
-            }
-          </div>
-
           {/* Desktop View */}
-          <div className="hidden lg:flex lg:space-x-6">
-            <div className="flex-1 min-w-[24rem]">
+          <div className="hidden md-lg:block">
+            {desktopView === 'summary' ? (
               <SummaryTable data={summaryData} onRowClick={handleSummaryClick} selectedDate={selectedDate} />
-            </div>
-            <div className="flex-1 min-w-[24rem]">
+            ) : (
               <DetailTable data={detailedData[selectedDate]} selectedDate={selectedDate} />
-            </div>
+            )}
           </div>
         </div>
       </div>

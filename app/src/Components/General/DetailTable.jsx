@@ -19,9 +19,9 @@ const DetailTable = ({ data, selectedDate }) => (
         </thead>
         <tbody>
           {data?.map((transaction, index) => (
-            <tr key={index} className={index % 2 === 0 ? 'bg-red-100' : 'bg-white'}>
+            <tr key={index} className={index % 2 === 0 ? 'bg-slate-200' : 'bg-white'}>
               <td className="py-2 px-4 flex items-center">
-                <img src={transaction.photo} alt={transaction.organization} className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full mr-2 flex-shrink-0" />
+                <img src={transaction.photo} alt={transaction.organization} className="w-9 h-9 lg:w-10 lg:h-10 rounded-full mr-2" />
                 <span className="truncate">{transaction.organization}</span>
               </td>
               <td className="text-right py-6 px-4 text-green-500 truncate">${transaction.amount}</td>

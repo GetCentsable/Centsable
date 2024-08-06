@@ -4,7 +4,7 @@ import QuickFilter from '../Components/General/QuickFilter';
 import SearchResults from '../Components/General/SearchResults';
 import { faMusic, faHandHoldingHeart, faVideo, faBuilding, faGamepad, faPodcast } from '@fortawesome/free-solid-svg-icons';
 import { app } from '../Firebase/firebase'; 
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, query, getDocs } from 'firebase/firestore';
 import UserContext from '../Context/UserContext';
 
 const Search = ({ isUserDrawerOpen }) => {
@@ -17,35 +17,20 @@ const Search = ({ isUserDrawerOpen }) => {
 
   const handleSearch = async (value) => {
     setSearchValue(value);
-    setIsSearching(value.length > 0);
-    // Here you would typically fetch search results based on the value
-    // For now, we'll use dummy data
-    if (value.length > 0) {
-      try {
-        // Query the recipients collection based on the search value
-        const q = query(
-          collection(db, 'recipients')//,
-          // where('name', '>=', value),
-          // where('name', '<=', value + '\uf8ff')
-        );
-
-        const querySnapshot = await getDocs(q);
-        console.log(querySnapshot);
-
-        const results = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          header: doc.data().name,
-          description: doc.data().description,
-          website: doc.data().website,
-          category: doc.data().category
-        }));
-
-        setSearchResults(results);
-      } catch (error) {
-        console.error('Error fetching search results:', error);
-      }
-    } else {
-      setSearchResults([]);
+    setIsSearching(true);
+    try {
+      const q = query(collection(db, 'recipients'));
+      const querySnapshot = await getDocs(q);
+      const results = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        header: doc.data().name,
+        description: doc.data().description,
+        website: doc.data().website,
+        category: doc.data().category
+      }));
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
     }
   };
 
@@ -64,20 +49,25 @@ const Search = ({ isUserDrawerOpen }) => {
     { icon: faPodcast, title: 'Podcasts' }
   ];
 
-
-
   return (
-    <div className={`flex flex-col items-center ${isSearching ? 'pt-20' : 'pt-60'} min-h-screen p-4 transition-all duration-300`}>
-      {!isSearching && <h1 className="text-3xl font-bold mb-8">Find Your Cause</h1>}
-      <SearchBar
-        searchValue={searchValue}
-        setSearchValue={handleSearch}
-        onClear={handleClearSearch}
-        isSearching={isSearching}
-        isUserDrawerOpen={isUserDrawerOpen}
-      />
-      {!isSearching && <QuickFilter filters={filters} setSearchValue={handleSearch} />}
-      {isSearching && <SearchResults results={searchResults} />}
+    <div className="flex flex-col items-center min-h-screen p-4">
+      <div className={`w-full max-w-2xl ${isSearching ? 'top-0 left-0 right-0 z-10 p-4' : 'mt-60'}`}>
+        <h1 className="text-3xl font-bold mb-8 text-center">Find Your Cause</h1>
+        <SearchBar
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+          onSearch={handleSearch}
+          onClear={handleClearSearch}
+          isSearching={isSearching}
+          isUserDrawerOpen={isUserDrawerOpen}
+        />
+        {!isSearching && <QuickFilter filters={filters} onSearch={handleSearch} />}
+      </div>
+      {isSearching && (
+        <div className="w-full max-w-2xl">
+          <SearchResults results={searchResults} />
+        </div>
+      )}
     </div>
   );
 };
