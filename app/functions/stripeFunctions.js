@@ -42,48 +42,89 @@ const CalculateRoundups = async (userId, dateString) => {
   }
 };
 
-const updateBankAccount = async (userId, dateString, totalRoundup) => {
-  try {
-    const db = admin.firestore();
-    const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
+try {
+  const db = admin.firestore();
+  const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
 
-    await db.runTransaction(async (transaction) => {
-      const bankAccountDoc = await transaction.get(bankAccountRef);
+  await db.runTransaction(async (transaction) => {
+    const bankAccountDoc = await transaction.get(bankAccountRef);
 
-      if (!bankAccountDoc.exists) {
-        throw new Error('Bank account document does not exist.');
-      }
+    if (!bankAccountDoc.exists) {
+      throw new Error('Bank account document does not exist.');
+    }
 
-      const newBalance = (bankAccountDoc.data().balance || 0) + totalRoundup;
-      const newReceived = (bankAccountDoc.data().received || 0) + totalRoundup;
+    // Update the bank account balance and received amount
+    const newBalance = (bankAccountDoc.data().balance || 0) + totalRoundup;
+    const newReceived = (bankAccountDoc.data().received || 0) + totalRoundup;
 
-      transaction.update(bankAccountRef, {
-        balance: newBalance,
-        received: newReceived,
-      });
-      console.log("balance and received updated");
-
-      const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
-      const dailyLogDoc = await transaction.get(dailyLogRef);
-
-      const userLog = {
-        [`${userId}.total_roundup`]: totalRoundup
-      };
-
-      if (dailyLogDoc.exists) {
-        transaction.update(dailyLogRef, userLog);
-        console.log('daily_log updated');
-      } else {
-        transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
-        console.log('daily_log created');
-      }
+    transaction.update(bankAccountRef, {
+      balance: newBalance,
+      received: newReceived,
     });
+    console.log("Bank account balance and received updated");
 
-    console.log(`Bank account updated with amount: ${totalRoundup}`);
-  } catch (error) {
-    console.error('Error updating bank account:', error);
-  }
-};
+    const userDoc = await db.collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    let userTotalRoundup = totalRoundup;
+    const userDistributions = [];
+
+    if (Array.isArray(userData.recipients)) {
+      let remainingRoundupAmount = parseFloat(userTotalRoundup.toFixed(2));
+      let isFirstRecipient = true;
+
+      // Distribute the roundup amount to recipients
+      for (const recipient of userData.recipients) {
+        let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
+        transferAmount = parseFloat(transferAmount.toFixed(2));
+
+        if (isFirstRecipient) {
+          // The first recipient gets any rounding differences
+          transferAmount = remainingRoundupAmount;
+          isFirstRecipient = false;
+        } else {
+          remainingRoundupAmount -= transferAmount;
+        }
+
+        // Add to the user's distribution log
+        userDistributions.push({
+          recipient_id: recipient.recipient_id,
+          recipient_name: recipient.recipient_name,
+          transfer_amount: transferAmount,
+        });
+      }
+    } else {
+      console.log(`No valid recipients found for user ${userId}`);
+    }
+
+    const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
+    const dailyLogDoc = await transaction.get(dailyLogRef);
+
+    const userLog = {
+      total_roundup: userTotalRoundup,
+      distributions: userDistributions,
+    };
+
+    if (dailyLogDoc.exists) {
+      // Merge with existing data
+      transaction.update(dailyLogRef, {
+        [`${userId}`]: userLog,
+        total_roundup_allUsers: admin.firestore.FieldValue.increment(totalRoundup),
+      });
+      console.log('Daily log updated');
+    } else {
+      // Create new daily log
+      transaction.set(dailyLogRef, {
+        [`${userId}`]: userLog,
+        total_roundup_allUsers: totalRoundup,
+      });
+      console.log('Daily log created');
+    }
+  });
+
+  console.log(`Bank account and daily log updated with amount: ${totalRoundup}`);
+} catch (error) {
+  console.error('Error updating bank account and generating daily log:', error);
+}
 
 exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
   console.log('createpayment intent outside cors');
