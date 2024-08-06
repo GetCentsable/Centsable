@@ -31,6 +31,7 @@ const transferWeeklyDonations = async () => {
 
       // Loop through the past 7 days
       for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        // Ensure the date format matches Firestore's date format exactly
         const dateFormatted = `${d.toLocaleString('default', { month: 'long' })} ${d.getDate()} ${d.getFullYear()}`;
         console.log(`Checking transactions for date: ${dateFormatted}`);
 
