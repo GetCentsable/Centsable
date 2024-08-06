@@ -10,7 +10,7 @@ const generateDailyLogs = async () => {
     console.log(`Processing transactions for date: ${dateToProcess}`);
 
     let totalRoundupAllUsers = 0;
-    const dailyLog = {}; // To store the log for each user
+    const userLogs = {}; // To store logs for each user
 
     const usersSnapshot = await db.collection('users').get();
     console.log(`Total users found: ${usersSnapshot.size}`);
@@ -66,8 +66,8 @@ const generateDailyLogs = async () => {
 
         totalRoundupAllUsers += userTotalRoundup;
 
-        // Store the user's log in the daily log
-        dailyLog[userId] = {
+        // Store the user's log
+        userLogs[userId] = {
           total_roundup: userTotalRoundup,
           distributions: userDistributions,
         };
@@ -76,8 +76,11 @@ const generateDailyLogs = async () => {
       }
     }
 
-    // Add total roundup for all users to the log
-    dailyLog.total_roundup_allUsers = totalRoundupAllUsers;
+    // Prepare the final log structure with `total_roundup_allUsers` at the top
+    const dailyLog = {
+      total_roundup_allUsers: totalRoundupAllUsers,
+      ...userLogs,
+    };
 
     // Store the daily log in the holding account's daily_logs subcollection
     const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
@@ -95,7 +98,6 @@ exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
   await generateDailyLogs();
   res.status(200).send('Daily logs generated successfully');
 });
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
