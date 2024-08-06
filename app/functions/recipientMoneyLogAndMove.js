@@ -12,86 +12,76 @@ const generateDailyLogs = async () => {
     let totalRoundupAllUsers = 0;
     const userLogs = {}; // To store logs for each user
 
-    const usersSnapshot = await db.collection('users').get();
-    console.log(`Total users found: ${usersSnapshot.size}`);
+    // Fetch the existing daily log
+    const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
+    const dailyLogRef = holdingAccountRef.collection('daily_logs').doc(dateToProcess);
+    const dailyLogDoc = await dailyLogRef.get();
 
-    // Iterate through each user
-    for (const userDoc of usersSnapshot.docs) {
-      const userId = userDoc.id;
-      const userData = userDoc.data();
-      let userTotalRoundup = 0;
-      const userDistributions = [];
-
-      console.log(`Processing user: ${userId}`);
-
-      // Get the transactions for the specific date
-      const transactionsSnapshot = await userDoc.ref
-        .collection('transactions')
-        .doc(dateToProcess)
-        .get();
-
-      if (transactionsSnapshot.exists) {
-        console.log(`Transactions found for user ${userId} on ${dateToProcess}`);
-
-        const transactionsData = transactionsSnapshot.data();
-        for (const [transactionId, transaction] of Object.entries(transactionsData)) {
-          const roundupAmount = transaction.round_up || 0; // Use the round_up field directly
-          userTotalRoundup += roundupAmount;
-        }
-
-        // Ensure recipients field exists and is an array
-        if (Array.isArray(userData.recipients)) {
-          let remainingRoundupAmount = parseFloat(userTotalRoundup.toFixed(2));
-          let isFirstRecipient = true;
-
-          // Distribute the roundup amount to recipients
-          for (const recipient of userData.recipients) {
-            let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
-            transferAmount = parseFloat(transferAmount.toFixed(2));
-
-            if (isFirstRecipient) {
-              // The first recipient gets any rounding differences
-              transferAmount = remainingRoundupAmount;
-              isFirstRecipient = false;
-            } else {
-              remainingRoundupAmount -= transferAmount;
-            }
-
-            // Add to the user's distribution log
-            userDistributions.push({
-              recipient_id: recipient.recipient_id,
-              recipient_name: recipient.recipient_name,
-              transfer_amount: transferAmount,
-            });
-          }
-        } else {
-          console.log(`No valid recipients found for user ${userId}`);
-        }
-
-        totalRoundupAllUsers += userTotalRoundup;
-
-        // Store the user's log
-        userLogs[userId] = {
-          total_roundup: userTotalRoundup,
-          distributions: userDistributions,
-        };
-      } else {
-        console.log(`No transactions found for user ${userId} on ${dateToProcess}`);
-      }
+    if (!dailyLogDoc.exists) {
+      console.log(`No existing daily log found for ${dateToProcess}`);
+      return;
     }
 
-    // Create the final log with total_roundup_allUsers first
+    const existingDailyLog = dailyLogDoc.data();
+
+    // Iterate through each user in the existing daily log
+    for (const userId in existingDailyLog) {
+      if (userId === 'total_roundup_allUsers') continue; // Skip the total_roundup_allUsers field
+
+      const userTotalRoundup = existingDailyLog[userId].total_roundup || 0;
+      const userData = await db.collection('users').doc(userId).get();
+      const userDistributions = [];
+
+      console.log(`Processing user: ${userId} with total_roundup: ${userTotalRoundup}`);
+
+      // Ensure recipients field exists and is an array
+      if (userData.exists && Array.isArray(userData.data().recipients)) {
+        let remainingRoundupAmount = parseFloat(userTotalRoundup.toFixed(2));
+        let isFirstRecipient = true;
+
+        // Distribute the roundup amount to recipients
+        for (const recipient of userData.data().recipients) {
+          let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
+          transferAmount = parseFloat(transferAmount.toFixed(2));
+
+          if (isFirstRecipient) {
+            // The first recipient gets any rounding differences
+            transferAmount = remainingRoundupAmount;
+            isFirstRecipient = false;
+          } else {
+            remainingRoundupAmount -= transferAmount;
+          }
+
+          // Add to the user's distribution log
+          userDistributions.push({
+            recipient_id: recipient.recipient_id,
+            recipient_name: recipient.recipient_name,
+            transfer_amount: transferAmount,
+          });
+        }
+      } else {
+        console.log(`No valid recipients found for user ${userId}`);
+      }
+
+      totalRoundupAllUsers += userTotalRoundup;
+
+      // Store the user's log
+      userLogs[userId] = {
+        total_roundup: userTotalRoundup,
+        distributions: userDistributions,
+      };
+    }
+
+    // Update the final log with total_roundup_allUsers first
     const dailyLog = {
       total_roundup_allUsers: totalRoundupAllUsers,
       ...userLogs,
     };
 
-    // Store the daily log in the holding account's daily_logs subcollection
-    const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
-    const logRef = holdingAccountRef.collection('daily_logs').doc(dateToProcess);
-    await logRef.set(dailyLog);
+    // Store the updated daily log back into Firestore
+    await dailyLogRef.set(dailyLog, { merge: true });
 
-    console.log(`Daily log for ${dateToProcess} created.`);
+    console.log(`Daily log for ${dateToProcess} updated successfully.`);
   } catch (error) {
     console.error('Error generating daily logs:', error);
   }
@@ -102,6 +92,7 @@ exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
   await generateDailyLogs();
   res.status(200).send('Daily logs generated successfully');
 });
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
