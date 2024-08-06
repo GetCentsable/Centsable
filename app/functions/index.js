@@ -24,7 +24,9 @@ const logger = require("firebase-functions/logger");
 const { getLinkedAccounts } = require('./frontendFunctions');
 const { createLinkToken, exchangePublicToken, loadAllUserTransactions } = require('./plaidFunctions');
 const { createPaymentIntent } = require('./stripeFunctions');
-const { triggerImmediateTransfer, scheduleDailyTransfer } = require('./transferDailyDonations');
+const { triggerDailyLogs} = require('./transferDailyToHolding');
+const { triggerMonthlyLogs } = require('./generateMonthlyLogs');
+const { processMonthlyLog } = require('./transferToRecipients');
 
 // Export the frontend functions
 exports.getLinkedAccounts = getLinkedAccounts;
@@ -37,6 +39,11 @@ exports.loadAllUserTransactions = loadAllUserTransactions;
 // Export the stripe functions
 exports.createPaymentIntent = createPaymentIntent;
 
-// Export the transaction ledger functions
-exports.triggerImmediateTransfer = triggerImmediateTransfer;
-exports.scheduleDailyTransfer = scheduleDailyTransfer;
+// Export the Daily Totals to Holding Account but not processed
+exports.triggerDailyLogs = triggerDailyLogs
+
+// Export the Monthly Totals to Holding Account but not processed
+exports.triggerMonthlyLogs = triggerMonthlyLogs
+
+// Export the Monthly Totals to Holding Account and proccessed it to the recipients
+exports.processMonthlyLog = processMonthlyLog
