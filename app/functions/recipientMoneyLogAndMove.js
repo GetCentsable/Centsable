@@ -1,5 +1,6 @@
 const { admin } = require('./firebaseAdminConfig');
 const functions = require('firebase-functions');
+const cors = require('cors')({ origin: true });
 
 const db = admin.firestore();
 
