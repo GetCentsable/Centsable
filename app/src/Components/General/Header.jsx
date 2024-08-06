@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const Header = ({ pageTopic, supportingText, icon, buttonText, isUserDrawerOpen, onClick }) => {
+const Header = ({ pageTopic, supportingText, icon, buttonText, isUserDrawerOpen, onClick, isMobile }) => {
   return (
     <div className="mb-2 flex row-auto justify-between">
       <div>
@@ -8,7 +8,7 @@ const Header = ({ pageTopic, supportingText, icon, buttonText, isUserDrawerOpen,
         <p className="text-gray-600">{supportingText}</p>
       </div>
       <button 
-        className={`z-20 mt-2 px-4 py-2 bg-red-400 text-neutral-100 rounded-lg transition-all duration-300 ${isUserDrawerOpen ? 'mr-80' : ''}`}
+        className={`z-20 mt-2 px-4 py-2 bg-red-400 text-neutral-100 rounded-lg transition-all duration-300 ${!isMobile && isUserDrawerOpen ? 'mr-80' : ''}`}
         onClick={onClick}
       >
         <FontAwesomeIcon icon={icon} className="mr-2" />

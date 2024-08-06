@@ -4,9 +4,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const UserDrawer = ({ user, isOpen, onClose, handleSignOut, isMobile }) => {
   return (
     <div 
-      className={`user-drawer fixed top-0 right-0 h-screen bg-red-400 transition-all duration-300 ${
-        isOpen ? (isMobile ? 'w-full' : 'w-80') : 'w-0'
-      } flex flex-col overflow-hidden ${isMobile ? 'z-[60] mt-16' : 'z-50'}`}
+      className={`fixed top-0 right-0 h-screen bg-red-400 transition-transform duration-300 ${
+        isOpen ? 'translate-x-0' : 'translate-x-full'
+      } ${isMobile ? 'w-full' : 'w-80'} flex flex-col overflow-hidden ${isMobile ? 'z-[60]' : 'z-50'}`}
+      style={{ top: isMobile ? '4rem' : '0' }}  // Adjust top position for mobile
     >
       <div className="flex-grow p-4">
         <div className="flex flex-col space-y-6">

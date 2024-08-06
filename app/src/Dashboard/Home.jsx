@@ -6,7 +6,7 @@ import ImpactSection from '../Components/General/ImpactSection';
 import ContributionsSection from '../Components/General/ContributionsSection';
 import FeaturedSection from '../Components/General/FeaturedSection';
 
-const HomePage = ({ isUserDrawerOpen, setSelectedNavItem }) => {
+const HomePage = ({ isUserDrawerOpen, setSelectedNavItem, isMobile }) => {
   const [selectedCategory, setSelectedCategory] = useState('Personal');
   const navigate = useNavigate();
 
@@ -55,6 +55,7 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem }) => {
         buttonText="View All"
         isUserDrawerOpen={isUserDrawerOpen}
         onClick={handleViewAll}
+        isMobile={isMobile}
       />
       
       <ImpactSection 
