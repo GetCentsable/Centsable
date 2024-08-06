@@ -35,11 +35,9 @@ const CalculateRoundups = async (userId, dateString) => {
       if (data.hasOwnProperty(key)) {
         const transaction = data[key];
         console.log(`transaction: ${transaction}`);
-        console.log(`transaction roundup amount: ${transaction.amount}`);
+        console.log(`transaction roundup amount: ${transaction.round_up}`);
         // Add the roundup_amount to the total, ensuring it's treated as a number
-        if (parseFloat(transaction.amount) > 0) {
-          totalRoundup += parseFloat(transaction.amount);
-        }
+        totalRoundup += parseFloat(transaction.round_up);
       }
     }
     console.log(`Total Roundup for ${dateString}: ${totalRoundup}`);
@@ -50,7 +48,7 @@ const CalculateRoundups = async (userId, dateString) => {
   }
 };
 
-const updateBankAccount = async (amount) => {
+const updateBankAccount = async (userId, dateString, totalRoundup) => {
   try {
     const db = admin.firestore();
     const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
@@ -69,6 +67,21 @@ const updateBankAccount = async (amount) => {
         balance: newBalance,
         received: newReceived,
       });
+
+      const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
+      const dailyLogDoc = await transaction.get(dailyLogRef);
+
+      const userLog = {
+        [userId]: {
+          total_roundup: totalRoundup,
+        },
+      };
+
+      if (dailyLogDoc.exists) {
+        transaction.update(dailyLogRef, userLog);
+      } else {
+        transaction.set(dailyLogRef, userLog);
+      }
     });
 
     console.log(`Bank account updated with amount: ${amount}`);
@@ -94,8 +107,8 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
 
       for (const userDoc of usersSnapshot.docs) {
         const userId = userDoc.id;
-        const userData = userDoc.data();
-        const username = userData.username;
+        // const userData = userDoc.data();
+        // const username = userData.username;
         const totalRoundup = await CalculateRoundups(userId, dateString);
 
         if (totalRoundup === 0) {
@@ -103,10 +116,12 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
           continue;
         }
 
-        // Update the bank account before creating the payment intent
-        await updateBankAccount(totalRoundup);
+        const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
 
-        const amountInCents = Math.round(totalRoundup * 100);
+        // Update the bank account before creating the payment intent
+        await updateBankAccount(userId, dateString, roundToTenthRoundup);
+
+        const amountInCents = Math.round(roundToTenthRoundup * 100);
         const paymentIntent = await stripe.paymentIntents.create({
           amount: amountInCents,
           currency: "usd",
