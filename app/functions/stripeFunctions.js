@@ -48,7 +48,7 @@ const CalculateRoundups = async (userId, dateString) => {
   }
 };
 
-const updateBankAccount = async (userId, dateString, totalRoundup) => {
+const updateBankAccount = async (userLogs, userId, dateString, totalRoundup) => {
   try {
     const db = admin.firestore();
     const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
@@ -68,18 +68,22 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
         received: newReceived,
       });
 
-      const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
-      const dailyLogDoc = await transaction.get(dailyLogRef);
-
-      const userLog = {
-        [`${userId}.total_roundup`]: totalRoundup
+      userLogs[userId] = {
+        total_roundup: totalRoundup,
       };
 
-      if (dailyLogDoc.exists) {
-        transaction.update(dailyLogRef, userLog);
-      } else {
-        transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
-      }
+      // const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
+      // const dailyLogDoc = await transaction.get(dailyLogRef);
+
+      // const userLog = {
+      //   [`${userId}.total_roundup`]: totalRoundup
+      // };
+
+      // if (dailyLogDoc.exists) {
+      //   transaction.update(dailyLogRef, userLog);
+      // } else {
+      //   transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
+      // }
     });
 
     console.log(`Bank account updated with amount: ${totalRoundup}`);
@@ -102,6 +106,7 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
       }
 
       const results = [];
+      const userLogs = {};
 
       for (const userDoc of usersSnapshot.docs) {
         const userId = userDoc.id;
@@ -117,7 +122,7 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
         const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
 
         // Update the bank account before creating the payment intent
-        await updateBankAccount(userId, dateString, roundToTenthRoundup);
+        await updateBankAccount(userLogs, userId, dateString, roundToTenthRoundup);
 
         const amountInCents = Math.round(roundToTenthRoundup * 100);
         const paymentIntent = await stripe.paymentIntents.create({
@@ -128,6 +133,15 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
         results.push({ userId, clientSecret: paymentIntent.client_secret });
         console.log(`Payment intent created for user ${userId}`);
       }
+
+      const dailyLog = {
+        total_roundup_allUsers: totalRoundupAllUsers,
+        ...userLogs,
+      };
+
+      const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
+      const logRef = holdingAccountRef.collection('daily_logs').doc(dateToProcess);
+      await logRef.set(dailyLog);
 
       res.status(200).send(results);
     } catch (error) {
