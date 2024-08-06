@@ -76,7 +76,7 @@ const generateDailyLogs = async () => {
       }
     }
 
-    // Prepare the final log structure with `total_roundup_allUsers` at the top
+    // Create the final log with total_roundup_allUsers first
     const dailyLog = {
       total_roundup_allUsers: totalRoundupAllUsers,
       ...userLogs,
@@ -98,6 +98,7 @@ exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
   await generateDailyLogs();
   res.status(200).send('Daily logs generated successfully');
 });
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
