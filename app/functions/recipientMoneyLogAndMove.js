@@ -117,43 +117,39 @@ const generateMonthlyLogs = async () => {
         if (userId === 'total_roundup_allUsers') continue; // Skip the total_roundup_allUsers field
 
         const userTotalRoundup = dailyLogData[userId].total_roundup || 0;
-        const userDistributions = [];
         const recipients = dailyLogData[userId].distributions || [];
 
-        let remainingRoundupAmount = parseFloat(userTotalRoundup.toFixed(2));
-        let isFirstRecipient = true;
+        if (recipients.length > 0) {
+          const baseAmount = parseFloat((userTotalRoundup / recipients.length).toFixed(2));
+          let remainingAmount = userTotalRoundup;
 
-        recipients.forEach((distribution, index) => {
-          let transferAmount = (userTotalRoundup * (distribution.percentage / 100));
-          transferAmount = parseFloat(transferAmount.toFixed(2));
+          // Distribute the roundup amount to recipients
+          recipients.forEach((recipient, index) => {
+            let transferAmount = baseAmount;
 
-          if (isFirstRecipient) {
-            // The first recipient gets any rounding differences
-            transferAmount = remainingRoundupAmount;
-            isFirstRecipient = false;
-          } else {
-            remainingRoundupAmount -= transferAmount;
-          }
+            // Handle rounding differences by adding any remaining cents to the first recipient
+            if (index === 0) {
+              transferAmount += parseFloat((remainingAmount - baseAmount * recipients.length).toFixed(2));
+            }
 
-          // Add to the user's distribution log
-          userDistributions.push({
-            recipient_id: distribution.recipient_id,
-            recipient_name: distribution.recipient_name,
-            transfer_amount: transferAmount,
+            remainingAmount -= transferAmount;
+
+            // Update the recipient's transfer amount
+            recipient.transfer_amount = transferAmount;
           });
-        });
 
-        // Update the user log with the correct distributions
-        dailyLogData[userId].distributions = userDistributions;
+          // Update the user log with the correct distributions
+          dailyLogData[userId].distributions = recipients;
+        }
+
+        // Update total roundup for all users
+        monthlyLog.total_roundup_allUsers += userTotalRoundup;
+
+        // Include the processed daily log
+        monthlyLog.daily_logs[logDate] = {
+          ...dailyLogData,
+        };
       }
-
-      // Aggregate total roundup for all users
-      monthlyLog.total_roundup_allUsers += dailyLogData.total_roundup_allUsers || 0;
-
-      // Include the processed daily log
-      monthlyLog.daily_logs[logDate] = {
-        ...dailyLogData,
-      };
     });
 
     // Store the monthly log in the holding account's monthly_logs subcollection
@@ -171,6 +167,7 @@ exports.triggerMonthlyLogs = functions.https.onRequest(async (req, res) => {
   await generateMonthlyLogs();
   res.status(200).send('Monthly logs generated successfully');
 });
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
