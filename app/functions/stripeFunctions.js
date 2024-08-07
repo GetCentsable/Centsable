@@ -1,42 +1,114 @@
 const { admin } = require('./firebaseAdminConfig');
 const functions = require('firebase-functions');
-const cors = require('cors')({origin: true});
-// import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
-// import { app } from 'firebase-admin';
-
+const cors = require('cors')({ origin: true });
 const STRIPE_SECRET_KEY = functions.config().stripe.secret_key;
 const stripe = require("stripe")(STRIPE_SECRET_KEY);
 
+const dateStrings = [
+  '2024-05-20',
+  '2024-05-21',
+  '2024-05-22',
+  '2024-05-23',
+  '2024-05-24',
+  '2024-05-25',
+  '2024-05-26',
+  '2024-05-27',
+  '2024-05-28',
+  '2024-05-29',
+  '2024-05-30',
+  '2024-05-31',
+  '2024-06-01',
+  '2024-06-02',
+  '2024-06-03',
+  '2024-06-04',
+  '2024-06-05',
+  '2024-06-06',
+  '2024-06-07',
+  '2024-06-08',
+  '2024-06-09',
+  '2024-06-10',
+  '2024-06-11',
+  '2024-06-12',
+  '2024-06-13',
+  '2024-06-14',
+  '2024-06-15',
+  '2024-06-16',
+  '2024-06-17',
+  '2024-06-18',
+  '2024-06-19',
+  '2024-06-20',
+  '2024-06-21',
+  '2024-06-22',
+  '2024-06-23',
+  '2024-06-24',
+  '2024-06-25',
+  '2024-06-26',
+  '2024-06-27',
+  '2024-06-28',
+  '2024-06-29',
+  '2024-06-30',
+  '2024-07-01',
+  '2024-07-02',
+  '2024-07-03',
+  '2024-07-04',
+  '2024-07-05',
+  '2024-07-06',
+  '2024-07-07',
+  '2024-07-08',
+  '2024-07-09',
+  '2024-07-10',
+  '2024-07-11',
+  '2024-07-12',
+  '2024-07-13',
+  '2024-07-14',
+  '2024-07-15',
+  '2024-07-16',
+  '2024-07-17',
+  '2024-07-18',
+  '2024-07-19',
+  '2024-07-20',
+  '2024-07-21',
+  '2024-07-22',
+  '2024-07-23',
+  '2024-07-24',
+  '2024-07-25',
+  '2024-07-26',
+  '2024-07-27',
+  '2024-07-28',
+  '2024-07-29',
+  '2024-07-30',
+  '2024-07-31',
+  '2024-08-01',
+  '2024-08-02',
+  '2024-08-03',
+  '2024-08-04',
+  '2024-08-05',
+  '2024-08-06',
+  '2024-08-07',
+  '2024-08-08',
+  '2024-08-09'
+];
 
+// This function looks at all the users transactions for a date and adds up all the rounded up change values
 const CalculateRoundups = async (userId, dateString) => {
   console.log(`Starting CalculateRoundups...\nuser_id: ${userId}, dateString: ${dateString}`);
   try {
-    console.log('Starting try block');
     const db = admin.firestore();
-    console.log('db acquired');
     const docRef = db.collection('users').doc(userId).collection('transactions').doc(dateString);
-    console.log('doc reffed');
     const doc = await docRef.get();
-    console.log('docref.get awaited');
 
     if (!doc.exists) {
       console.log(`No transactions found for ${dateString}`);
       return 0;
     }
-    console.log('doc exists');
 
     const data = doc.data();
     let totalRoundup = 0;
 
     // Iterate over the transaction fields
     for (const key in data) {
-      console.log(`key: ${key}`);
-      console.log(`forloop, total roundup: ${totalRoundup}`);
       if (data.hasOwnProperty(key)) {
         const transaction = data[key];
-        console.log(`transaction: ${transaction}`);
-        console.log(`transaction roundup amount: ${transaction.round_up}`);
-        // Add the roundup_amount to the total, ensuring it's treated as a number
         totalRoundup += parseFloat(transaction.round_up);
       }
     }
@@ -48,53 +120,79 @@ const CalculateRoundups = async (userId, dateString) => {
   }
 };
 
+// This function updates the holding account and centsable account with the money paid by users and adds daily logs
 const updateBankAccount = async (userId, dateString, totalRoundup) => {
+  console.log(`Starting updateBankAccount...\nuser_id: ${userId}, dateString: ${dateString}, totalRoundup: ${totalRoundup}`);
   try {
     const db = admin.firestore();
-    const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
+    const centsableAccountRef = db.collection('bank_accounts').doc('Qz9dVjodzi7S8IAfIQdU');
+    const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
 
     await db.runTransaction(async (transaction) => {
-      const bankAccountDoc = await transaction.get(bankAccountRef);
-
-      if (!bankAccountDoc.exists) {
-        throw new Error('Bank account document does not exist.');
-      }
-
-      const newBalance = (bankAccountDoc.data().balance || 0) + amount;
-      const newReceived = (bankAccountDoc.data().received || 0) + amount;
-
-      transaction.update(bankAccountRef, {
-        balance: newBalance,
-        received: newReceived,
-      });
-
-      const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
+      const centsableAccountDoc = await transaction.get(centsableAccountRef);
+      const holdingAccountDoc = await transaction.get(holdingAccountRef);
+      const dailyLogRef = holdingAccountRef.collection('daily_logs').doc(dateString);
       const dailyLogDoc = await transaction.get(dailyLogRef);
 
+      if (!centsableAccountDoc.exists) {
+        throw new Error('Centsable account document does not exist.');
+      }
+      if (!holdingAccountDoc.exists) {
+        throw new Error('Holding account document does not exist.');
+      }
+
+      const centsableCut = totalRoundup / 20;
+      const recipientsCut = totalRoundup - centsableCut;
+      const roundRecipientCut = Math.floor(recipientsCut * 100) / 100;
+
+      // console.log(`holdingAccountDoc.data().balance pre +roundup: ${holdingAccountDoc.data().balance}`);
+      // console.log(`holdingAccountDoc.data().received pre +roundup: ${holdingAccountDoc.data().received}`);
+      const newCentsableBalance = (centsableAccountDoc.data().balance || 0) + centsableCut;
+      const newCentsableReceived = (centsableAccountDoc.data().received || 0) + centsableCut;
+      const newHoldingBalance = (holdingAccountDoc.data().balance || 0) + recipientsCut;
+      const newHoldingReceived = (holdingAccountDoc.data().received || 0) + recipientsCut;
+      // console.log(`newBalance post +roundup: ${newBalance}`);
+      // console.log(`newReceived post +roundup: ${newBalance}`);
+      const roundCentsableBalance = Math.floor(newCentsableBalance * 100) / 100;
+      const roundCentsableReceived = Math.floor(newCentsableReceived * 100) / 100;
+      const roundHoldingBalance = Math.floor(newHoldingBalance * 100) / 100;
+      const roundHoldingReceived = Math.floor(newHoldingReceived * 100) / 100;
+      // console.log(`roundNewBalance post math.floor: ${roundNewBalance}`);
+      // console.log(`roundNewReceived post math.floor: ${roundNewReceived}`);
+
+      transaction.update(centsableAccountRef, {
+        balance: roundCentsableBalance,
+        received: roundCentsableReceived,
+      });
+      transaction.update(holdingAccountRef, {
+        balance: roundHoldingBalance,
+        received: roundHoldingReceived,
+      });
+      console.log("balance and received updated");
+
       const userLog = {
-        [userId]: {
-          total_roundup: totalRoundup,
-        },
+        [`${userId}.total_roundup`]: roundRecipientCut
       };
 
       if (dailyLogDoc.exists) {
         transaction.update(dailyLogRef, userLog);
+        console.log('daily_log updated');
       } else {
-        transaction.set(dailyLogRef, userLog);
+        transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
+        console.log('daily_log created');
       }
     });
 
-    console.log(`Bank account updated with amount: ${amount}`);
+    console.log(`Bank account updated with total_roundup: ${totalRoundup}`);
   } catch (error) {
     console.error('Error updating bank account:', error);
   }
 };
 
 exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
-  console.log('createpayment intent outside cors');
   cors(req, res, async () => {
     try {
-      const dateString = '2024-07-23';
+      // const dateString = '2024-07-23';
       const db = admin.firestore();
       const usersSnapshot = await db.collection('users').get();
 
@@ -104,31 +202,36 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
       }
 
       const results = [];
-
-      for (const userDoc of usersSnapshot.docs) {
-        const userId = userDoc.id;
-        // const userData = userDoc.data();
-        // const username = userData.username;
-        const totalRoundup = await CalculateRoundups(userId, dateString);
-
-        if (totalRoundup === 0) {
-          results.push({ userId, error: 'No transactions found or total roundup is zero.' });
-          continue;
+      for (const dateString of dateStrings) {
+        for (const userDoc of usersSnapshot.docs) {
+          const userId = userDoc.id;
+          const totalRoundup = await CalculateRoundups(userId, dateString);
+  
+          if (totalRoundup === 0) {
+            results.push({ userId, error: 'No transactions found or total roundup is zero.' });
+            continue;
+          }
+          if (totalRoundup < 0.5) {
+            results.push({ userId, error: 'Total roundup is less than $0.50.' });
+            continue;
+          }
+  
+          // console.log(`totalRoundup pre tenthrounding: ${totalRoundup}`);
+          const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
+          // console.log(`roundToTenthRoundup post tenthrounding: ${roundToTenthRoundup}`);
+  
+          // Update the bank account before creating the payment intent
+          await updateBankAccount(userId, dateString, roundToTenthRoundup);
+  
+          const amountInCents = Math.round(roundToTenthRoundup * 100);
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: amountInCents,
+            currency: "usd",
+          });
+  
+          results.push({ userId, clientSecret: paymentIntent.client_secret });
+          console.log(`Payment intent created for user ${userId} on date ${dateString}`);
         }
-
-        const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
-
-        // Update the bank account before creating the payment intent
-        await updateBankAccount(userId, dateString, roundToTenthRoundup);
-
-        const amountInCents = Math.round(roundToTenthRoundup * 100);
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: amountInCents,
-          currency: "usd",
-        });
-
-        results.push({ userId, clientSecret: paymentIntent.client_secret });
-        console.log(`Payment intent created for user ${userId}`);
       }
 
       res.status(200).send(results);
@@ -137,4 +240,3 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
     }
   });
 });
-
