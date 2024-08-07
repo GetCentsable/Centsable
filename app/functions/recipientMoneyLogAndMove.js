@@ -1,9 +1,3 @@
-const { admin } = require('./firebaseAdminConfig');
-const functions = require('firebase-functions');
-const cors = require('cors')({ origin: true });
-
-const db = admin.firestore();
-
 const generateDailyLogs = async () => {
   try {
     const dateToProcess = '2024-07-23'; // Set to the specific date you want to process
@@ -36,21 +30,20 @@ const generateDailyLogs = async () => {
 
       // Ensure recipients field exists and is an array
       if (userData.exists && Array.isArray(userData.data().recipients)) {
-        let remainingRoundupAmount = parseFloat(userTotalRoundup.toFixed(2));
-        let isFirstRecipient = true;
+        const recipients = userData.data().recipients;
+        const baseAmount = parseFloat((userTotalRoundup / recipients.length).toFixed(2));
+        let remainingAmount = userTotalRoundup;
 
         // Distribute the roundup amount to recipients
-        for (const recipient of userData.data().recipients) {
-          let transferAmount = (userTotalRoundup * recipient.percentage) / 100;
-          transferAmount = parseFloat(transferAmount.toFixed(2));
+        recipients.forEach((recipient, index) => {
+          let transferAmount = baseAmount;
 
-          if (isFirstRecipient) {
-            // The first recipient gets any rounding differences
-            transferAmount = remainingRoundupAmount;
-            isFirstRecipient = false;
-          } else {
-            remainingRoundupAmount -= transferAmount;
+          // Handle rounding differences by adding any remaining cents to the first recipient
+          if (index === 0) {
+            transferAmount += parseFloat((remainingAmount - baseAmount * recipients.length).toFixed(2));
           }
+
+          remainingAmount -= transferAmount;
 
           // Add to the user's distribution log
           userDistributions.push({
@@ -58,7 +51,7 @@ const generateDailyLogs = async () => {
             recipient_name: recipient.recipient_name,
             transfer_amount: transferAmount,
           });
-        }
+        });
       } else {
         console.log(`No valid recipients found for user ${userId}`);
       }
@@ -92,6 +85,7 @@ exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
   await generateDailyLogs();
   res.status(200).send('Daily logs generated successfully');
 });
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
