@@ -1,3 +1,9 @@
+const { admin } = require('./firebaseAdminConfig');
+const functions = require('firebase-functions');
+const cors = require('cors')({ origin: true });
+
+const db = admin.firestore(); // Initialize Firestore
+
 const generateDailyLogs = async () => {
   try {
     const dateToProcess = '2024-07-23'; // Set to the specific date you want to process
