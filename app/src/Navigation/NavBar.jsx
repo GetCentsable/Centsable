@@ -7,6 +7,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import UserContext from '../Context/UserContext';
 import { app } from '../Firebase/firebase';
 import { getAuth, signOut } from 'firebase/auth';
+import smallLogo from '../assets/small_logo.png';
+import small_logo_white_letters from '../assets/small_logo_white_letters.png';
 
 const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, selectedItem, setSelectedItem }) => {
   const { user, setUser, setIsLoggedIn } = useContext(UserContext);
@@ -112,7 +114,7 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, sele
             <button onClick={handleNavBarToggle} className="text-white">
               <FontAwesomeIcon icon={faBars} size="lg" />
             </button>
-            <img src="" alt="Logo" className="h-8" />
+            <img src={small_logo_white_letters} alt="Logo" className="h-12 mb-1" />
             <button onClick={handleUserDrawerToggle} className="text-white">
               <img src="https://picsum.photos/100/100" alt="User avatar" className="w-12 h-12 rounded-full" />
             </button>
@@ -128,7 +130,7 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, sele
       ) : (
         <div className={`fixed top-0 left-0 h-screen bg-slate-700 transition-all duration-300 ${isOpen ? 'w-64' : 'w-18'} flex flex-col z-40`}>
           <div className="flex-grow p-4">
-            <img src={`${isOpen ? '' : ''}`} alt='L' className='-24 mx-auto mb-6' />
+            <img src={`${isOpen ? small_logo_white_letters : smallLogo}`} alt='L' className='h-12 mx-auto mb-4' />
             {renderNavContent()}
           </div>
           <div className="mt-auto">
