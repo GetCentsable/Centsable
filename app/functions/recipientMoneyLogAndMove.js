@@ -44,7 +44,7 @@ const generateDailyLogs = async () => {
         recipients.forEach((recipient, index) => {
           let transferAmount = baseAmount;
 
-          // Handle rounding differences by adding any remaining cents to the first recipient
+          // The first recipient gets any remaining cents
           if (index === 0) {
             transferAmount += parseFloat((remainingAmount - baseAmount * recipients.length).toFixed(2));
           }
@@ -86,11 +86,6 @@ const generateDailyLogs = async () => {
   }
 };
 
-// Function to trigger the generation of daily logs
-exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
-  await generateDailyLogs();
-  res.status(200).send('Daily logs generated successfully');
-});
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +122,7 @@ const generateMonthlyLogs = async () => {
           recipients.forEach((recipient, index) => {
             let transferAmount = baseAmount;
 
-            // Handle rounding differences by adding any remaining cents to the first recipient
+            // The first recipient gets any remaining cents
             if (index === 0) {
               transferAmount += parseFloat((remainingAmount - baseAmount * recipients.length).toFixed(2));
             }
@@ -162,11 +157,6 @@ const generateMonthlyLogs = async () => {
   }
 };
 
-// Function to trigger the generation of monthly logs
-exports.triggerMonthlyLogs = functions.https.onRequest(async (req, res) => {
-  await generateMonthlyLogs();
-  res.status(200).send('Monthly logs generated successfully');
-});
 
 
 
