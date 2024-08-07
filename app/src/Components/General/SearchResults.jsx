@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const SearchResults = ({ results }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 7;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -80,22 +80,22 @@ const SearchResults = ({ results }) => {
   };
 
   return (
-    <div className="w-full max-w-2xl mt-32 border rounded-lg overflow-hidden flex flex-col flex-grow">
-      <div className="flex-grow">
+    <div className="w-full max-w-2xl border rounded-lg overflow-hidden flex flex-col min-h-[calc(100vh-20rem)]">
+      <div className="flex-grow overflow-y-auto">
         {currentItems.map((item) => (
-          <div key={item.id} className="p-4 border-b">
-            <h3 className="font-bold">{item.header}</h3>
-            <p>Description: {item.description}</p>
-            <a>Website: {item.website}</a>
-            <p>Category: {item.category}</p>
+          <div key={item.id} className="p-2 sm:p-4 border-b">
+            <h3 className="font-bold text-sm sm:text-base">{item.header}</h3>
+            <p className="text-xs sm:text-sm">Description: {item.description}</p>
+            <a className="text-xs sm:text-sm">Website: {item.website}</a>
+            <p className="text-xs sm:text-sm">Category: {item.category}</p>
           </div>
         ))}
       </div>
-      <div className="flex justify-center items-center p-4">
+      <div className="flex justify-center items-center p-2 sm:p-4 bg-white border-t">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mx-1 px-2 py-1 sm:px-3 sm:py-1 text-sm sm:text-base rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Previous
         </button>
@@ -103,7 +103,7 @@ const SearchResults = ({ results }) => {
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mx-1 px-2 py-1 sm:px-3 sm:py-1 text-sm sm:text-base rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next
         </button>
@@ -116,7 +116,7 @@ const SearchResults = ({ results }) => {
 const PageButton = ({ pageNumber, currentPage, onClick }) => (
   <button
     onClick={onClick}
-    className={`mx-1 px-3 py-1 rounded ${
+    className={`mx-1 px-2 py-1 sm:px-3 sm:py-1 text-sm sm:text-base rounded ${
       currentPage === pageNumber
         ? "bg-red-400 text-white"
         : "bg-gray-200 text-gray-700 hover:bg-gray-300"

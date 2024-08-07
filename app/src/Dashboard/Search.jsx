@@ -7,7 +7,7 @@ import { app } from '../Firebase/firebase';
 import { getFirestore, collection, query, getDocs } from 'firebase/firestore';
 import UserContext from '../Context/UserContext';
 
-const Search = ({ isUserDrawerOpen }) => {
+const Search = ({ isUserDrawerOpen, isMobile }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -50,9 +50,9 @@ const Search = ({ isUserDrawerOpen }) => {
   ];
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-4">
-      <div className={`w-full max-w-2xl ${isSearching ? 'top-0 left-0 right-0 z-10 p-4' : 'mt-60'}`}>
-        <h1 className="text-3xl font-bold mb-8 text-center">Find Your Cause</h1>
+    <div className="flex flex-col items-center min-h-screen p-2 sm:p-4">
+      <div className={`w-full max-w-2xl ${isSearching ? 'top-0 left-0 right-0 p-2 sm:p-4' : 'mt-20 sm:mt-60'}`}>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8 text-center">Find Your Cause</h1>
         <SearchBar
           searchValue={searchValue}
           setSearchValue={setSearchValue}
@@ -64,7 +64,7 @@ const Search = ({ isUserDrawerOpen }) => {
         {!isSearching && <QuickFilter filters={filters} onSearch={handleSearch} />}
       </div>
       {isSearching && (
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-2xl mt-4 mb-16">
           <SearchResults results={searchResults} />
         </div>
       )}

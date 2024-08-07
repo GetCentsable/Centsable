@@ -21,7 +21,7 @@ const SearchBar = ({ searchValue, setSearchValue, onSearch, onClear, isSearching
           onChange={(e) => setSearchValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Search"
-          className="w-full p-3 pl-10 pr-10 rounded-full border border-gray-300 focus:outline-none"
+          className="w-full p-2 sm:p-3 pl-8 sm:pl-10 pr-8 sm:pr-10 text-sm sm:text-base rounded-full border border-gray-300 focus:outline-none"
         />
         <FontAwesomeIcon
           icon={faSearch}
