@@ -31,7 +31,7 @@ const Dashboard = () => {
     // Async function sends req to firebase function
     const getUserTransactions = async () => {
       // Path to the firebase function
-      const path = '';
+      const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/getUserTransactions';
 
       try {
         // Get current user object from firebase auth
@@ -57,25 +57,25 @@ const Dashboard = () => {
           // If request failed, reset transactions state to empty array,
           // tranactionsLoaded state to false, and return
           if (!response.ok) {
-            setTransactions([])
+            setTransactions({})
             setTransactionsLoaded(false);
-            const errorData = response.json();
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error}`);
+            const errorData = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
           }
 
           // Check the data for errors
           const data = await response.json();
           if (!data) {
-            setTransactions([])
+            setTransactions({})
             setTransactionsLoaded(false);
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
           // If there are no errors, add the transactions array
           // to the context transactions, and toggle transactionsLoaded
-          setTransactions(data.transactions);
+          setTransactions(data);
           setTransactionsLoaded(true);
-          console.log('User transactions retrieved:', transactions);
+          // console.log('User transactions retrieved:', data);
         } else {
           throw new Error('No current user found');
         }
@@ -115,7 +115,7 @@ const Dashboard = () => {
         />
         <main className={`
           flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 transition-all duration-300 min-h-screen
-          ${isMobile ? 'pt-16' : (isNavBarOpen ? 'md:ml-64' : 'md:ml-20')}
+          ${isMobile ? 'mt-16' : (isNavBarOpen ? 'md:ml-64' : 'md:ml-20')}
         `}>
           <Routes>
             <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
