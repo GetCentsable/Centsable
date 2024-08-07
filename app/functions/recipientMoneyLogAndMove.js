@@ -194,40 +194,43 @@ const processMonthlyLog = async () => {
         if (userId !== 'total_roundup_allUsers') {
           const userLog = dailyLog[userId];
 
-          // Adjust transfer amounts to avoid splitting pennies
+          // Calculate and distribute funds to recipients
           let totalTransferAmount = parseFloat(userLog.total_roundup.toFixed(2));
           let remainingAmount = totalTransferAmount;
-          let isFirstRecipient = true;
 
           for (const [index, distribution] of userLog.distributions.entries()) {
-            let transferAmount = (totalTransferAmount * distribution.percentage) / 100;
-            transferAmount = parseFloat(transferAmount.toFixed(2));
+            let transferAmount = parseFloat((totalTransferAmount * distribution.percentage / 100).toFixed(2));
 
-            if (isFirstRecipient) {
+            if (index === 0) {
               // The first recipient gets any rounding differences
-              transferAmount = parseFloat(remainingAmount.toFixed(2));
-              isFirstRecipient = false;
-            } else {
-              remainingAmount -= transferAmount;
+              transferAmount += parseFloat((remainingAmount - transferAmount * userLog.distributions.length).toFixed(2));
             }
-
+            
+            remainingAmount -= transferAmount;
             distribution.transfer_amount = transferAmount;
 
-            // Process each recipient distribution for the user
-            const recipientRef = db.collection('recipients').doc(distribution.recipient_id);
-
             // Update the recipient's money received
-            await recipientRef.update({
-              money_received: admin.firestore.FieldValue.increment(distribution.transfer_amount),
+            await db.runTransaction(async (transaction) => {
+              const recipientRef = db.collection('recipients').doc(distribution.recipient_id);
+              const recipientDoc = await transaction.get(recipientRef);
+
+              if (!recipientDoc.exists) {
+                throw new Error(`Recipient ${distribution.recipient_name} not found.`);
+              }
+
+              // Update recipient's received amount
+              transaction.update(recipientRef, {
+                money_received: admin.firestore.FieldValue.increment(transferAmount),
+              });
+
+              // Update the holding account balance and paid amount
+              transaction.update(holdingAccountRef, {
+                balance: admin.firestore.FieldValue.increment(-transferAmount),
+                paid: admin.firestore.FieldValue.increment(transferAmount),
+              });
             });
 
-            // Update the holding account balance and paid amount
-            await holdingAccountRef.update({
-              balance: admin.firestore.FieldValue.increment(-distribution.transfer_amount),
-              paid: admin.firestore.FieldValue.increment(distribution.transfer_amount),
-            });
-
-            console.log(`Transferred ${distribution.transfer_amount} to ${distribution.recipient_name} for user ${userId}`);
+            console.log(`Transferred ${transferAmount} to ${distribution.recipient_name} for user ${userId}`);
           }
         }
       }
