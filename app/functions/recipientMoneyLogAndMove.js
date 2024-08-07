@@ -4,8 +4,9 @@ const cors = require('cors')({ origin: true });
 
 const db = admin.firestore();
 
-const generateDailyLogsForDate = async (dateToProcess) => {
+const generateDailyLogs = async () => {
   try {
+    const dateToProcess = '2024-07-23'; // Set to the specific date you want to process
     console.log(`Processing transactions for date: ${dateToProcess}`);
 
     let totalRoundupAllUsers = 0;
@@ -82,23 +83,15 @@ const generateDailyLogsForDate = async (dateToProcess) => {
 
     console.log(`Daily log for ${dateToProcess} updated successfully.`);
   } catch (error) {
-    console.error(`Error generating daily logs for ${dateToProcess}:`, error);
+    console.error('Error generating daily logs:', error);
   }
 };
 
-const generateDailyLogs = async (datesToProcess) => {
-  for (const dateToProcess of datesToProcess) {
-    await generateDailyLogsForDate(dateToProcess);
-  }
-};
-
-// Function to trigger the generation of daily logs for multiple dates
+// Function to trigger the generation of daily logs
 exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
-  const datesToProcess = ['2024-07-23', '2024-07-20', '2024-07-06']; // Add your dates here
-  await generateDailyLogs(datesToProcess);
-  res.status(200).send('Daily logs generated successfully for all dates');
+  await generateDailyLogs();
+  res.status(200).send('Daily logs generated successfully');
 });
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
