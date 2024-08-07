@@ -175,11 +175,11 @@ exports.triggerMonthlyLogs = functions.https.onRequest(async (req, res) => {
 const processMonthlyLog = async () => {
   try {
     const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
-    const monthlyLogRef = holdingAccountRef.collection('monthly_logs').doc('2024-08'); // Use the current month
+    const monthlyLogRef = holdingAccountRef.collection('monthly_logs').doc('2024-07'); // Use the correct month
     const monthlyLogDoc = await monthlyLogRef.get();
 
     if (!monthlyLogDoc.exists) {
-      console.log(`Monthly log for 2024-08 not found.`);
+      console.log(`Monthly log for 2024-07 not found.`);
       return;
     }
 
