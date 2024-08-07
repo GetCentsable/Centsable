@@ -202,39 +202,41 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
       // Extract user and date from the content
       const userFromRequest = content[0]?.user || null;
       const dateFromRequest = content[0]?.date || null;
+      console.log(`userFromRequest: ${userFromRequest}`);
+      console.log(`dateFromRequest: ${dateFromRequest}`);
 
       // Fetch all users if no user is provided
-      const db = admin.firestore();
-      const usersSnapshot = await db.collection('users').get();
-      const allUsers = usersSnapshot.docs.map(doc => doc.id);
+      // const db = admin.firestore();
+      // const usersSnapshot = await db.collection('users').get();
+      // const allUsers = usersSnapshot.docs.map(doc => doc.id);
 
-      // Determine the dates to check
-      const datesToCheck = dateFromRequest ? [dateFromRequest] : dateStrings;
+      // // Determine the dates to check
+      // const datesToCheck = dateFromRequest ? [dateFromRequest] : dateStrings;
 
-      for (const date of datesToCheck) {
-        const userIdsToCheck = userFromRequest ? [userFromRequest] : allUsers;
+      // for (const date of datesToCheck) {
+      //   const userIdsToCheck = userFromRequest ? [userFromRequest] : allUsers;
 
-        for (const userId of userIdsToCheck) {
-          const totalRoundup = await CalculateRoundups(userId, date);
+      //   for (const userId of userIdsToCheck) {
+      //     const totalRoundup = await CalculateRoundups(userId, date);
 
-          if (totalRoundup === 0) {
-            results.push({ user: userId, date, error: 'No transactions found or total roundup is zero.' });
-            continue;
-          }
+      //     if (totalRoundup === 0) {
+      //       results.push({ user: userId, date, error: 'No transactions found or total roundup is zero.' });
+      //       continue;
+      //     }
 
-          // Update the bank account before creating the payment intent
-          await updateBankAccount(userId, date, totalRoundup);
+      //     // Update the bank account before creating the payment intent
+      //     await updateBankAccount(userId, date, totalRoundup);
 
-          const amountInCents = Math.round(totalRoundup * 100);
-          const paymentIntent = await stripe.paymentIntents.create({
-            amount: amountInCents,
-            currency: "usd",
-          });
+      //     const amountInCents = Math.round(totalRoundup * 100);
+      //     const paymentIntent = await stripe.paymentIntents.create({
+      //       amount: amountInCents,
+      //       currency: "usd",
+      //     });
 
-          results.push({ user: userId, clientSecret: paymentIntent.client_secret, date });
-          console.log(`Payment intent created for user ${userId} on date ${date}`);
-        }
-      }
+      //     results.push({ user: userId, clientSecret: paymentIntent.client_secret, date });
+      //     console.log(`Payment intent created for user ${userId} on date ${date}`);
+      //   }
+      // }
 
       res.status(200).send(results);
     } catch (error) {
