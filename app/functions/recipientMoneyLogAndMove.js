@@ -87,6 +87,12 @@ const generateDailyLogs = async () => {
 };
 
 
+// Function to trigger the generation of daily logs
+exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
+  await generateDailyLogs();
+  res.status(200).send('Daily logs generated successfully');
+});
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -157,6 +163,12 @@ const generateMonthlyLogs = async () => {
   }
 };
 
+
+// Function to trigger the generation of monthly logs
+exports.triggerMonthlyLogs = functions.https.onRequest(async (req, res) => {
+  await generateMonthlyLogs();
+  res.status(200).send('Monthly logs generated successfully');
+});
 
 
 
