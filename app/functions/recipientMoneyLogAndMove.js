@@ -99,8 +99,8 @@ const generateMonthlyLogs = async () => {
   try {
     const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
     const dailyLogsSnapshot = await holdingAccountRef.collection('daily_logs')
-      .where(admin.firestore.FieldPath.documentId(), '>=', '2024-08-01') // Start of the month
-      .where(admin.firestore.FieldPath.documentId(), '<=', '2024-08-31') // End of the month
+      .where(admin.firestore.FieldPath.documentId(), '>=', '2024-07-01') // Start of the month
+      .where(admin.firestore.FieldPath.documentId(), '<=', '2024-07-31') // End of the month
       .get();
 
     let monthlyLog = {
