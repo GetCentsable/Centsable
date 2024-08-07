@@ -112,13 +112,48 @@ const generateMonthlyLogs = async () => {
       const logDate = dailyLogDoc.id;
       const dailyLogData = dailyLogDoc.data();
 
-      // Include only the relevant daily log data without duplicating user information
-      monthlyLog.daily_logs[logDate] = {
-        ...dailyLogData,
-      };
+      // Process each user's log within the daily log
+      for (const userId in dailyLogData) {
+        if (userId === 'total_roundup_allUsers') continue; // Skip the total_roundup_allUsers field
+
+        const userTotalRoundup = dailyLogData[userId].total_roundup || 0;
+        const userDistributions = [];
+        const recipients = dailyLogData[userId].distributions || [];
+
+        let remainingRoundupAmount = parseFloat(userTotalRoundup.toFixed(2));
+        let isFirstRecipient = true;
+
+        recipients.forEach((distribution, index) => {
+          let transferAmount = (userTotalRoundup * (distribution.percentage / 100));
+          transferAmount = parseFloat(transferAmount.toFixed(2));
+
+          if (isFirstRecipient) {
+            // The first recipient gets any rounding differences
+            transferAmount = remainingRoundupAmount;
+            isFirstRecipient = false;
+          } else {
+            remainingRoundupAmount -= transferAmount;
+          }
+
+          // Add to the user's distribution log
+          userDistributions.push({
+            recipient_id: distribution.recipient_id,
+            recipient_name: distribution.recipient_name,
+            transfer_amount: transferAmount,
+          });
+        });
+
+        // Update the user log with the correct distributions
+        dailyLogData[userId].distributions = userDistributions;
+      }
 
       // Aggregate total roundup for all users
       monthlyLog.total_roundup_allUsers += dailyLogData.total_roundup_allUsers || 0;
+
+      // Include the processed daily log
+      monthlyLog.daily_logs[logDate] = {
+        ...dailyLogData,
+      };
     });
 
     // Store the monthly log in the holding account's monthly_logs subcollection
@@ -136,6 +171,7 @@ exports.triggerMonthlyLogs = functions.https.onRequest(async (req, res) => {
   await generateMonthlyLogs();
   res.status(200).send('Monthly logs generated successfully');
 });
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
