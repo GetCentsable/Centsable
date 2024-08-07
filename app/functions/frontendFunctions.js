@@ -119,12 +119,16 @@ exports.getUserTransactions = functions.https.onRequest((req, res) => {
           // Get a snapshot of the collection to retrieve the data
           const userTransCollectionSnap = await userTransCollectionRef.get();
 
-          // Create an object to hold the transactions data
-          const user_transactions = {};
+          // Create an array to hold the transactions data
+          const user_transactions = [];
 
           // Loop through each document in the snapshot to gather transaction data
           userTransCollectionSnap.forEach(doc => {
             const transaction_date = doc.data();
+            const dateKey = doc.id;
+
+            // Create an object to store transactions for each date
+            const transactions_for_date = {};
 
             // Loop through each transaction of a date to gather data needed
             for (const [trans_id, transaction] of Object.entries(transaction_date)) {
@@ -133,18 +137,29 @@ exports.getUserTransactions = functions.https.onRequest((req, res) => {
                 continue;
               }
 
+              // Convert Date for front end
+              const [year, month, day] = transaction.date.split('-');
+              const converted_date = `${parseInt(month)}/${parseInt(day)}/${year}`;
+
               // Object holds current transaction data we want to send to front end
               const transaction_data = {
                 amount: transaction.amount,
-                date: transaction.date,
+                date: converted_date,
                 logo_url: transaction.logo_url,
                 merchant_name: transaction.merchant_name,
                 round_up: transaction.round_up,
                 website: transaction.website,
               };
 
-              // Add the current transaction to the object returned
-              user_transactions[trans_id] = transaction_data;
+              // Add the current transaction to the transactions object
+              transactions_for_date[trans_id] = transaction_data;
+            }
+
+            // Add the transactions object to the user
+            // transactions array with the date as the key
+            // as long as the transactions object is not empty
+            if (Object.keys(transactions_for_date).length > 0) {
+              user_transactions.push({ [dateKey]: transactions_for_date });
             }
           });
 

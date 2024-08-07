@@ -319,6 +319,20 @@ exports.loadAllUserTransactions = functions.https.onRequest(async (req, res) => 
 
             // Round to two decimal places
             round_up = Math.round(round_up * 100) / 100;
+
+          }
+          
+          // !!!!!! FOR MVP PURPOSES ONLY !!!!!!
+          // If the roundup is 0, randomly add an amount
+          // to the roundup and the difference to the 
+          // transaction amount
+          if (round_up === 0) {
+            round_up = (Math.random() * 0.99 + 0.01).toFixed(2);
+            round_up = parseFloat(round_up);
+            const nextWholeDollar = Math.ceil(round_up);
+            const difference = nextWholeDollar - round_up;
+            transaction.amount = (transaction.amount + difference).toFixed(2);
+            transaction.amount = parseFloat(transaction.amount);
           }
 
           // Add roundup attribute to the transaction object
