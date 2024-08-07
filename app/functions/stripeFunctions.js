@@ -112,7 +112,7 @@ const CalculateRoundups = async (userId, dateString) => {
         totalRoundup += parseFloat(transaction.round_up);
       }
     }
-    console.log(`Total Roundup for ${dateString}: ${totalRoundup}`);
+    // console.log(`Total Roundup for ${dateString}: ${totalRoundup}`);
     return totalRoundup;
   } catch (error) {
     console.error('Error fetching transactions:', error);
@@ -168,7 +168,6 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
         balance: roundHoldingBalance,
         received: roundHoldingReceived,
       });
-      console.log("balance and received updated");
 
       const userLog = {
         [`${userId}.total_roundup`]: roundRecipientCut
@@ -176,14 +175,12 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
 
       if (dailyLogDoc.exists) {
         transaction.update(dailyLogRef, userLog);
-        console.log('daily_log updated');
       } else {
         transaction.set(dailyLogRef, { [userId]: { total_roundup: totalRoundup } });
-        console.log('daily_log created');
       }
     });
 
-    console.log(`Bank account updated with total_roundup: ${totalRoundup}`);
+    // console.log(`Bank account updated with total_roundup: ${totalRoundup}`);
   } catch (error) {
     console.error('Error updating bank account:', error);
   }
@@ -192,45 +189,55 @@ const updateBankAccount = async (userId, dateString, totalRoundup) => {
 exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
-      // const dateString = '2024-07-23';
-      const db = admin.firestore();
-      const usersSnapshot = await db.collection('users').get();
-
-      if (usersSnapshot.empty) {
-        console.log('No users found.');
-        return res.status(400).send({ error: 'No users found.' });
+      const { content } = req.body;
+      if (!content || !Array.isArray(content) || content.length === 0) {
+        return res.status(400).send({ error: 'Invalid content' });
       }
 
       const results = [];
-      for (const dateString of dateStrings) {
-        for (const userDoc of usersSnapshot.docs) {
-          const userId = userDoc.id;
-          const totalRoundup = await CalculateRoundups(userId, dateString);
-  
+
+      // Extract user and date from the content
+      const userFromRequest = content[0]?.user || null;
+      const dateFromRequest = content[0]?.date || null;
+      console.log(`userFromRequest: ${userFromRequest}`);
+      console.log(`dateFromRequest: ${dateFromRequest}`);
+
+      // Fetch all users if no user is provided
+      const db = admin.firestore();
+      const usersSnapshot = await db.collection('users').get();
+      const allUsers = usersSnapshot.docs.map(doc => doc.id);
+
+      // // Determine the dates to check
+      const datesToCheck = dateFromRequest ? [dateFromRequest] : dateStrings;
+      console.log(`datesToCheck: ${datesToCheck}`);
+
+      for (const date of datesToCheck) {
+        const userIdsToCheck = userFromRequest ? [userFromRequest] : allUsers;
+        console.log(`userIdsToCheck: ${userIdsToCheck}`);
+
+        for (const userId of userIdsToCheck) {
+          const totalRoundup = await CalculateRoundups(userId, date);
+
           if (totalRoundup === 0) {
-            results.push({ userId, error: 'No transactions found or total roundup is zero.' });
+            results.push({ user: userId, date, error: 'No transactions found or total roundup is zero.' });
             continue;
           }
           if (totalRoundup < 0.5) {
-            results.push({ userId, error: 'Total roundup is less than $0.50.' });
+            results.push({ user: userId, date, error: 'Total round up is less than $0.50' });
             continue;
           }
-  
-          // console.log(`totalRoundup pre tenthrounding: ${totalRoundup}`);
-          const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
-          // console.log(`roundToTenthRoundup post tenthrounding: ${roundToTenthRoundup}`);
-  
+
           // Update the bank account before creating the payment intent
-          await updateBankAccount(userId, dateString, roundToTenthRoundup);
-  
-          const amountInCents = Math.round(roundToTenthRoundup * 100);
+          await updateBankAccount(userId, date, totalRoundup);
+
+          const amountInCents = Math.round(totalRoundup * 100);
           const paymentIntent = await stripe.paymentIntents.create({
             amount: amountInCents,
             currency: "usd",
           });
-  
-          results.push({ userId, clientSecret: paymentIntent.client_secret });
-          console.log(`Payment intent created for user ${userId} on date ${dateString}`);
+
+          results.push({ user: userId, clientSecret: paymentIntent.client_secret, date });
+          // console.log(`Payment intent created for user ${userId} on date ${date}`);
         }
       }
 
@@ -240,3 +247,56 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
     }
   });
 });
+
+
+// exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
+//   cors(req, res, async () => {
+//     try {
+//       // const dateString = '2024-07-23';
+//       const db = admin.firestore();
+//       const usersSnapshot = await db.collection('users').get();
+
+//       if (usersSnapshot.empty) {
+//         console.log('No users found.');
+//         return res.status(400).send({ error: 'No users found.' });
+//       }
+
+//       const results = [];
+//       for (const dateString of dateStrings) {
+//         for (const userDoc of usersSnapshot.docs) {
+//           const userId = userDoc.id;
+//           const totalRoundup = await CalculateRoundups(userId, dateString);
+  
+//           if (totalRoundup === 0) {
+//             results.push({ userId, error: 'No transactions found or total roundup is zero.' });
+//             continue;
+//           }
+//           if (totalRoundup < 0.5) {
+//             results.push({ userId, error: 'Total roundup is less than $0.50.' });
+//             continue;
+//           }
+  
+//           // console.log(`totalRoundup pre tenthrounding: ${totalRoundup}`);
+//           const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
+//           // console.log(`roundToTenthRoundup post tenthrounding: ${roundToTenthRoundup}`);
+  
+//           // Update the bank account before creating the payment intent
+//           await updateBankAccount(userId, dateString, roundToTenthRoundup);
+  
+//           const amountInCents = Math.round(roundToTenthRoundup * 100);
+//           const paymentIntent = await stripe.paymentIntents.create({
+//             amount: amountInCents,
+//             currency: "usd",
+//           });
+  
+//           results.push({ userId, clientSecret: paymentIntent.client_secret });
+//           console.log(`Payment intent created for user ${userId} on date ${dateString}`);
+//         }
+//       }
+
+//       res.status(200).send(results);
+//     } catch (error) {
+//       res.status(500).send({ error: error.message });
+//     }
+//   });
+// });

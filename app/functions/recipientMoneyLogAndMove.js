@@ -6,121 +6,122 @@ const db = admin.firestore(); // Initialize Firestore
 
 const generateDailyLogs = async () => {
   try {
-    const dateToProcess = '2024-07-23'; // Set to the specific date you want to process
-    console.log(`Processing transactions for date: ${dateToProcess}`);
+    const dateStrings = [
+      '2024-05-20',
+      '2024-05-21',
+      '2024-05-22',
+      '2024-05-23',
+      '2024-05-24',
+      '2024-05-25',
+      '2024-05-26',
+      '2024-05-27',
+      '2024-05-28',
+      '2024-05-29',
+      '2024-05-30',
+      '2024-05-31',
+      '2024-06-01',
+      '2024-06-02',
+      '2024-06-03',
+      '2024-06-04',
+      '2024-06-05',
+      '2024-06-06',
+      '2024-06-07',
+      '2024-06-08',
+      '2024-06-09',
+      '2024-06-10',
+      '2024-06-11',
+      '2024-06-12',
+      '2024-06-13',
+      '2024-06-14',
+      '2024-06-15',
+      '2024-06-16',
+      '2024-06-17',
+      '2024-06-18',
+      '2024-06-19',
+      '2024-06-20',
+      '2024-06-21',
+      '2024-06-22',
+      '2024-06-23',
+      '2024-06-24',
+      '2024-06-25',
+      '2024-06-26',
+      '2024-06-27',
+      '2024-06-28',
+      '2024-06-29',
+      '2024-06-30',
+      '2024-07-01',
+      '2024-07-02',
+      '2024-07-03',
+      '2024-07-04',
+      '2024-07-05',
+      '2024-07-06',
+      '2024-07-07',
+      '2024-07-08',
+      '2024-07-09',
+      '2024-07-10',
+      '2024-07-11',
+      '2024-07-12',
+      '2024-07-13',
+      '2024-07-14',
+      '2024-07-15',
+      '2024-07-16',
+      '2024-07-17',
+      '2024-07-18',
+      '2024-07-19',
+      '2024-07-20',
+      '2024-07-21',
+      '2024-07-22',
+      '2024-07-23',
+      '2024-07-24',
+      '2024-07-25',
+      '2024-07-26',
+      '2024-07-27',
+      '2024-07-28',
+      '2024-07-29',
+      '2024-07-30',
+      '2024-07-31',
+      '2024-08-01',
+      '2024-08-02',
+      '2024-08-03',
+      '2024-08-04',
+      '2024-08-05',
+      '2024-08-06',
+      '2024-08-07',
+      '2024-08-08',
+      '2024-08-09'
+    ];
 
-    let totalRoundupAllUsers = 0;
-    const userLogs = {}; // To store logs for each user
+    for (const dateToProcess of dateStrings) {
+      console.log(`Processing transactions for date: ${dateToProcess}`);
 
-    // Fetch the existing daily log
-    const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
-    const dailyLogRef = holdingAccountRef.collection('daily_logs').doc(dateToProcess);
-    const dailyLogDoc = await dailyLogRef.get();
+      let totalRoundupAllUsers = 0;
+      const userLogs = {}; // To store logs for each user
 
-    if (!dailyLogDoc.exists) {
-      console.log(`No existing daily log found for ${dateToProcess}`);
-      return;
-    }
+      // Fetch the existing daily log
+      const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
+      const dailyLogRef = holdingAccountRef.collection('daily_logs').doc(dateToProcess);
+      const dailyLogDoc = await dailyLogRef.get();
 
-    const existingDailyLog = dailyLogDoc.data();
-
-    // Iterate through each user in the existing daily log
-    for (const userId in existingDailyLog) {
-      if (userId === 'total_roundup_allUsers') continue; // Skip the total_roundup_allUsers field
-
-      const userTotalRoundup = existingDailyLog[userId].total_roundup || 0;
-      const userData = await db.collection('users').doc(userId).get();
-      const userDistributions = [];
-
-      console.log(`Processing user: ${userId} with total_roundup: ${userTotalRoundup}`);
-
-      // Ensure recipients field exists and is an array
-      if (userData.exists && Array.isArray(userData.data().recipients)) {
-        const recipients = userData.data().recipients;
-        const baseAmount = parseFloat((userTotalRoundup / recipients.length).toFixed(2));
-        let remainingAmount = userTotalRoundup;
-
-        // Distribute the roundup amount to recipients
-        recipients.forEach((recipient, index) => {
-          let transferAmount = baseAmount;
-
-          // The first recipient gets any remaining cents
-          if (index === 0) {
-            transferAmount += parseFloat((remainingAmount - baseAmount * recipients.length).toFixed(2));
-          }
-
-          remainingAmount -= transferAmount;
-
-          // Add to the user's distribution log
-          userDistributions.push({
-            recipient_id: recipient.recipient_id,
-            recipient_name: recipient.recipient_name,
-            transfer_amount: transferAmount,
-          });
-        });
-      } else {
-        console.log(`No valid recipients found for user ${userId}`);
+      if (!dailyLogDoc.exists) {
+        console.log(`No existing daily log found for ${dateToProcess}`);
+        continue;
       }
 
-      totalRoundupAllUsers += userTotalRoundup;
+      const existingDailyLog = dailyLogDoc.data();
 
-      // Store the user's log
-      userLogs[userId] = {
-        total_roundup: userTotalRoundup,
-        distributions: userDistributions,
-      };
-    }
-
-    // Update the final log with total_roundup_allUsers first
-    const dailyLog = {
-      total_roundup_allUsers: totalRoundupAllUsers,
-      ...userLogs,
-    };
-
-    // Store the updated daily log back into Firestore
-    await dailyLogRef.set(dailyLog, { merge: true });
-
-    console.log(`Daily log for ${dateToProcess} updated successfully.`);
-  } catch (error) {
-    console.error('Error generating daily logs:', error);
-  }
-};
-
-
-// Function to trigger the generation of daily logs
-exports.triggerDailyLogs = functions.https.onRequest(async (req, res) => {
-  await generateDailyLogs();
-  res.status(200).send('Daily logs generated successfully');
-});
-
-
-///////////////////////////////////////////////////////////////////////////////////////////
-
-const generateMonthlyLogs = async () => {
-  try {
-    const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
-    const dailyLogsSnapshot = await holdingAccountRef.collection('daily_logs')
-      .where(admin.firestore.FieldPath.documentId(), '>=', '2024-07-01') // Start of the month
-      .where(admin.firestore.FieldPath.documentId(), '<=', '2024-07-31') // End of the month
-      .get();
-
-    let monthlyLog = {
-      total_roundup_allUsers: 0,
-      daily_logs: {}, // To store each daily log
-    };
-
-    dailyLogsSnapshot.forEach((dailyLogDoc) => {
-      const logDate = dailyLogDoc.id;
-      const dailyLogData = dailyLogDoc.data();
-
-      // Process each user's log within the daily log
-      for (const userId in dailyLogData) {
+      // Iterate through each user in the existing daily log
+      for (const userId in existingDailyLog) {
         if (userId === 'total_roundup_allUsers') continue; // Skip the total_roundup_allUsers field
 
-        const userTotalRoundup = dailyLogData[userId].total_roundup || 0;
-        const recipients = dailyLogData[userId].distributions || [];
+        const userTotalRoundup = existingDailyLog[userId].total_roundup || 0;
+        const userData = await db.collection('users').doc(userId).get();
+        const userDistributions = [];
 
-        if (recipients.length > 0) {
+        console.log(`Processing user: ${userId} with total_roundup: ${userTotalRoundup}`);
+
+        // Ensure recipients field exists and is an array
+        if (userData.exists && Array.isArray(userData.data().recipients)) {
+          const recipients = userData.data().recipients;
           const baseAmount = parseFloat((userTotalRoundup / recipients.length).toFixed(2));
           let remainingAmount = userTotalRoundup;
 
@@ -135,41 +136,140 @@ const generateMonthlyLogs = async () => {
 
             remainingAmount -= transferAmount;
 
-            // Update the recipient's transfer amount
-            recipient.transfer_amount = transferAmount;
+            // Add to the user's distribution log
+            userDistributions.push({
+              recipient_id: recipient.recipient_id,
+              recipient_name: recipient.recipient_name,
+              transfer_amount: transferAmount,
+            });
           });
-
-          // Update the user log with the correct distributions
-          dailyLogData[userId].distributions = recipients;
+        } else {
+          console.log(`No valid recipients found for user ${userId}`);
         }
 
-        // Update total roundup for all users
-        monthlyLog.total_roundup_allUsers += userTotalRoundup;
+        totalRoundupAllUsers += userTotalRoundup;
 
-        // Include the processed daily log
-        monthlyLog.daily_logs[logDate] = {
-          ...dailyLogData,
+        // Store the user's log
+        userLogs[userId] = {
+          total_roundup: userTotalRoundup,
+          distributions: userDistributions,
         };
       }
-    });
 
-    // Store the monthly log in the holding account's monthly_logs subcollection
-    const logRef = holdingAccountRef.collection('monthly_logs').doc('2024-07'); // Use the current month
-    await logRef.set(monthlyLog);
+      // Update the final log with total_roundup_allUsers first
+      const dailyLog = {
+        total_roundup_allUsers: totalRoundupAllUsers,
+        ...userLogs,
+      };
 
-    console.log(`Monthly log for 2024-07 created.`);
+      // Store the updated daily log back into Firestore
+      await dailyLogRef.set(dailyLog, { merge: true });
+
+      console.log(`Daily log for ${dateToProcess} updated successfully.`);
+    }
+  } catch (error) {
+    console.error('Error generating daily logs:', error);
+  }
+};
+
+// Function to trigger the generation of daily logs
+exports.triggerDailyLogs = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    await generateDailyLogs();
+    res.status(200).send('Daily logs generated successfully');
+  });
+});
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+const generateMonthlyLogs = async () => {
+  try {
+    const dateRanges = [
+      { start: '2024-05-01', end: '2024-05-31' },
+      { start: '2024-06-01', end: '2024-06-30' },
+      { start: '2024-07-01', end: '2024-07-31' },
+      { start: '2024-08-01', end: '2024-08-31' }
+    ];
+
+    const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
+
+    for (const range of dateRanges) {
+      const { start, end } = range;
+
+      const dailyLogsSnapshot = await holdingAccountRef.collection('daily_logs')
+        .where(admin.firestore.FieldPath.documentId(), '>=', start)
+        .where(admin.firestore.FieldPath.documentId(), '<=', end)
+        .get();
+
+      let monthlyLog = {
+        total_roundup_allUsers: 0,
+        daily_logs: {}, // To store each daily log
+      };
+
+      dailyLogsSnapshot.forEach((dailyLogDoc) => {
+        const logDate = dailyLogDoc.id;
+        const dailyLogData = dailyLogDoc.data();
+
+        // Process each user's log within the daily log
+        for (const userId in dailyLogData) {
+          if (userId === 'total_roundup_allUsers') continue; // Skip the total_roundup_allUsers field
+
+          const userTotalRoundup = dailyLogData[userId].total_roundup || 0;
+          const recipients = dailyLogData[userId].distributions || [];
+
+          if (recipients.length > 0) {
+            const baseAmount = parseFloat((userTotalRoundup / recipients.length).toFixed(2));
+            let remainingAmount = userTotalRoundup;
+
+            // Distribute the roundup amount to recipients
+            recipients.forEach((recipient, index) => {
+              let transferAmount = baseAmount;
+
+              // The first recipient gets any remaining cents
+              if (index === 0) {
+                transferAmount += parseFloat((remainingAmount - baseAmount * recipients.length).toFixed(2));
+              }
+
+              remainingAmount -= transferAmount;
+
+              // Update the recipient's transfer amount
+              recipient.transfer_amount = transferAmount;
+            });
+
+            // Update the user log with the correct distributions
+            dailyLogData[userId].distributions = recipients;
+          }
+
+          // Update total roundup for all users
+          monthlyLog.total_roundup_allUsers += userTotalRoundup;
+
+          // Include the processed daily log
+          monthlyLog.daily_logs[logDate] = {
+            ...dailyLogData,
+          };
+        }
+      });
+
+      // Store the monthly log in the holding account's monthly_logs subcollection
+      const monthName = start.slice(0, 7); // Extract the year and month (e.g., '2024-05')
+      const logRef = holdingAccountRef.collection('monthly_logs').doc(monthName);
+      await logRef.set(monthlyLog);
+
+      console.log(`Monthly log for ${monthName} created.`);
+    }
   } catch (error) {
     console.error('Error generating monthly logs:', error);
   }
 };
 
-
 // Function to trigger the generation of monthly logs
-exports.triggerMonthlyLogs = functions.https.onRequest(async (req, res) => {
-  await generateMonthlyLogs();
-  res.status(200).send('Monthly logs generated successfully');
+exports.triggerMonthlyLogs = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    await generateMonthlyLogs();
+    res.status(200).send('Monthly logs generated successfully');
+  });
 });
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -248,7 +348,9 @@ const processMonthlyLog = async () => {
 };
 
 // Function to trigger the processing of monthly logs
-exports.processMonthlyLog = functions.https.onRequest(async (req, res) => {
-  await processMonthlyLog();
-  res.status(200).send('Monthly log processing completed successfully');
+exports.processMonthlyLog = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    await processMonthlyLog();
+    res.status(200).send('Monthly log processing completed successfully');
+  });
 });

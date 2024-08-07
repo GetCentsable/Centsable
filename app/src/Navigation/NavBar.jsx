@@ -10,12 +10,12 @@ import { getAuth, signOut } from 'firebase/auth';
 import smallLogo from '../assets/small_logo.png';
 import small_logo_white_letters from '../assets/small_logo_white_letters.png';
 
-const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, selectedItem, setSelectedItem }) => {
+const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, selectedItem, setSelectedItem, isAdmin }) => {
   const { user, setUser, setIsLoggedIn } = useContext(UserContext);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const auth = getAuth(app);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     navigate('/');
@@ -29,8 +29,6 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, sele
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  useEffect(() => {}, [user]);
 
   const handleSignOut = async (e) => {
     e.preventDefault();
@@ -59,38 +57,37 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, sele
     { icon: faHome, title: 'Home' },
     { icon: faSearch, title: 'Search' },
     { icon: faHistory, title: 'Donations' },
-    { icon: faWallet, title: 'Accounts' }
-  ];
+    { icon: faWallet, title: 'Accounts' },
+    isAdmin && { icon: faUser, title: 'Admin' } // Conditionally add Admin link
+  ].filter(Boolean); // Filter out falsey values
 
   const renderNavContent = () => (
-    <>
-      <nav className="space-y-2">
-        {navItems.map((item, index) => (
-          <Link
-            to={`/${item.title.toLowerCase()}`}
+    <nav className="space-y-2">
+      {navItems.map((item, index) => (
+        <Link
+          to={`/${item.title.toLowerCase()}`}
+          key={index}
+          className="block mb-2 last:mb-0"
+          onClick={() => {
+            setSelectedItem(item.title);
+            if (isMobile) {
+              setIsMobileNavOpen(false);
+              if (isUserDrawerOpen) toggleUserDrawer();
+            }
+          }}
+        >
+          <Button
             key={index}
-            className="block mb-2 last:mb-0"
-            onClick={() => {
-              setSelectedItem(item.title);
-              if (isMobile) {
-                setIsMobileNavOpen(false);
-                if (isUserDrawerOpen) toggleUserDrawer();
-              }
-            }}
-          >
-            <Button
-              key={index}
-              icon={item.icon}
-              title={item.title}
-              isSelected={selectedItem === item.title}
-              isNavButton={true}
-              isOpen={isMobile ? isMobileNavOpen : isOpen}
-              className="my-custom-class" 
-            />
-          </Link>
-        ))}
-      </nav>
-    </>
+            icon={item.icon}
+            title={item.title}
+            isSelected={selectedItem === item.title}
+            isNavButton={true}
+            isOpen={isMobile ? isMobileNavOpen : isOpen}
+            className="my-custom-class" 
+          />
+        </Link>
+      ))}
+    </nav>
   );
 
   const handleUserDrawerToggle = () => {
