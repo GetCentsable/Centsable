@@ -211,6 +211,10 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
             results.push({ userId, error: 'No transactions found or total roundup is zero.' });
             continue;
           }
+          if (totalRoundup < 0.5) {
+            results.push({ userId, error: 'Total roundup is less than $0.50.' });
+            continue;
+          }
   
           // console.log(`totalRoundup pre tenthrounding: ${totalRoundup}`);
           const roundToTenthRoundup = Math.round(totalRoundup * 100) / 100;
