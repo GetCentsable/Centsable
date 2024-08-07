@@ -118,11 +118,11 @@ const Dashboard = () => {
           ${isMobile ? 'mt-16' : (isNavBarOpen ? 'md:ml-64' : 'md:ml-20')}
         `}>
           <Routes>
-            <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} />} />
-            <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} />} />
-            <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} />} />
-            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} />} />
-            <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} />} />
+            <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
+            <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
+            <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+            <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
           </Routes>
         </main>
       </div>
