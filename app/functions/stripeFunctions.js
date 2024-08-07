@@ -7,6 +7,7 @@ const cors = require('cors')({ origin: true });
 const STRIPE_SECRET_KEY = functions.config().stripe.secret_key;
 const stripe = require("stripe")(STRIPE_SECRET_KEY);
 
+// This function looks at all the users transactions for a date and adds up all the rounded up change values
 const CalculateRoundups = async (userId, dateString) => {
   console.log(`Starting CalculateRoundups...\nuser_id: ${userId}, dateString: ${dateString}`);
   try {
@@ -37,35 +38,52 @@ const CalculateRoundups = async (userId, dateString) => {
   }
 };
 
+// This function updates the holding account and centsable account with the money paid by users and adds daily logs
 const updateBankAccount = async (userId, dateString, totalRoundup) => {
   console.log(`Starting updateBankAccount...\nuser_id: ${userId}, dateString: ${dateString}, totalRoundup: ${totalRoundup}`);
   try {
     const db = admin.firestore();
-    const bankAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV'); //holding account
+    const centsableAccountRef = db.collection('bank_accounts').doc('Qz9dVjodzi7S8IAfIQdU');
+    const holdingAccountRef = db.collection('bank_accounts').doc('TEBGHPGaGH8imJTyeasV');
 
     await db.runTransaction(async (transaction) => {
-      const bankAccountDoc = await transaction.get(bankAccountRef);
-      const dailyLogRef = bankAccountRef.collection('daily_logs').doc(dateString);
+      const centsableAccountDoc = await transaction.get(centsableAccountRef);
+      const holdingAccountDoc = await transaction.get(holdingAccountRef);
+      const dailyLogRef = holdingAccountRef.collection('daily_logs').doc(dateString);
       const dailyLogDoc = await transaction.get(dailyLogRef);
 
-      if (!bankAccountDoc.exists) {
-        throw new Error('Bank account document does not exist.');
+      if (!centsableAccountDoc.exists) {
+        throw new Error('Centsable account document does not exist.');
+      }
+      if (!holdingAccountDoc.exists) {
+        throw new Error('Holding account document does not exist.');
       }
 
-      console.log(`bankAccountDoc.data().balance pre +roundup: ${bankAccountDoc.data().balance}`);
-      console.log(`bankAccountDoc.data().received pre +roundup: ${bankAccountDoc.data().received}`);
-      const newBalance = (bankAccountDoc.data().balance || 0) + totalRoundup;
-      const newReceived = (bankAccountDoc.data().received || 0) + totalRoundup;
-      console.log(`newBalance post +roundup: ${newBalance}`);
-      console.log(`newReceived post +roundup: ${newBalance}`);
-      const roundNewBalance = Math.floor(newBalance * 100) / 100;
-      const roundNewReceived = Math.floor(newReceived * 100) / 100;
-      console.log(`roundNewBalance post math.floor: ${roundNewBalance}`);
-      console.log(`roundNewReceived post math.floor: ${roundNewReceived}`);
+      const centsableCut = totalRoundup / 20;
+      const recipientsCut = totalRoundup - centsableCut;
 
-      transaction.update(bankAccountRef, {
-        balance: roundNewBalance,
-        received: roundNewReceived,
+      // console.log(`holdingAccountDoc.data().balance pre +roundup: ${holdingAccountDoc.data().balance}`);
+      // console.log(`holdingAccountDoc.data().received pre +roundup: ${holdingAccountDoc.data().received}`);
+      const newCentsableBalance = (centsableAccountDoc.data().balance || 0) + centsableCut;
+      const newCentsableReceived = (centsableAccountDoc.data().received || 0) + centsableCut;
+      const newHoldingBalance = (holdingAccountDoc.data().balance || 0) + recipientsCut;
+      const newHoldingReceived = (holdingAccountDoc.data().received || 0) + recipientsCut;
+      // console.log(`newBalance post +roundup: ${newBalance}`);
+      // console.log(`newReceived post +roundup: ${newBalance}`);
+      const roundCentsableBalance = Math.floor(newCentsableBalance * 100) / 100;
+      const roundCentsableReceived = Math.floor(newCentsableReceived * 100) / 100;
+      const roundHoldingBalance = Math.floor(newHoldingBalance * 100) / 100;
+      const roundHoldingReceived = Math.floor(newHoldingReceived * 100) / 100;
+      // console.log(`roundNewBalance post math.floor: ${roundNewBalance}`);
+      // console.log(`roundNewReceived post math.floor: ${roundNewReceived}`);
+
+      transaction.update(centsableAccountRef, {
+        balance: roundCentsableBalance,
+        received: roundCentsableReceived,
+      });
+      transaction.update(holdingAccountRef, {
+        balance: roundHoldingBalance,
+        received: roundHoldingReceived,
       });
       console.log("balance and received updated");
 
