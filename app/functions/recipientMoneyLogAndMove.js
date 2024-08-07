@@ -122,10 +122,10 @@ const generateMonthlyLogs = async () => {
     });
 
     // Store the monthly log in the holding account's monthly_logs subcollection
-    const logRef = holdingAccountRef.collection('monthly_logs').doc('2024-08'); // Use the current month
+    const logRef = holdingAccountRef.collection('monthly_logs').doc('2024-07'); // Use the current month
     await logRef.set(monthlyLog);
 
-    console.log(`Monthly log for 2024-08 created.`);
+    console.log(`Monthly log for 2024-07 created.`);
   } catch (error) {
     console.error('Error generating monthly logs:', error);
   }
