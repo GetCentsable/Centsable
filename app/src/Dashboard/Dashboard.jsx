@@ -4,10 +4,12 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
 import { app } from "../Firebase/firebase.js";
 import { getAuth } from 'firebase/auth';
+import { doc, getDoc, getFirestore } from "firebase/firestore";
 import Home from './Home';
 import Search from './Search';
 import Donations from './Donations';
 import Accounts from './Accounts';
+import AdminPage from '../Admin/AdminPage';
 import UserDrawer from '../Components/General/UserDrawer';
 import TransactionContext from '../Context/TransactionsContext';
 
@@ -16,33 +18,28 @@ const Dashboard = () => {
   const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
   const [selectedNavItem, setSelectedNavItem] = useState('Home');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isAdmin, setIsAdmin] = useState(false);
   const {
     transactions,
     setTransactions,
     setTransactionsLoaded,
   } = useContext(TransactionContext);
 
-  // Insantiate firebase auth
+  // Instantiate firebase auth
   const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // Runs once on user log in to retrieve recent
-  // transactions from plaid api
+  // Runs once on user log in to retrieve recent transactions from plaid api
   useEffect(() => {
-    // Async function sends req to firebase function
     const getUserTransactions = async () => {
-      // Path to the firebase function
       const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/getUserTransactions';
 
       try {
-        // Get current user object from firebase auth
         const currentUser = auth.currentUser;
 
-        if(currentUser) {
-          // Generate firebase user id token from current user
+        if (currentUser) {
           const idToken = await currentUser.getIdToken();
 
-          // Fetch call to getUserTransactions to get non
-          // sensitive transaction data
           const response = await fetch(path, {
             method: "POST",
             headers: {
@@ -54,38 +51,55 @@ const Dashboard = () => {
             }),
           });
 
-          // If request failed, reset transactions state to empty array,
-          // tranactionsLoaded state to false, and return
           if (!response.ok) {
-            setTransactions({})
+            setTransactions({});
             setTransactionsLoaded(false);
             const errorData = await response.json();
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
           }
 
-          // Check the data for errors
           const data = await response.json();
           if (!data) {
-            setTransactions({})
+            setTransactions({});
             setTransactionsLoaded(false);
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          // If there are no errors, add the transactions array
-          // to the context transactions, and toggle transactionsLoaded
           setTransactions(data);
           setTransactionsLoaded(true);
-          // console.log('User transactions retrieved:', data);
         } else {
           throw new Error('No current user found');
         }
       } catch (err) {
         console.log('There was an error fetching user transaction history:', err);
       }
-    }
+    };
 
-    // Invoke function
     getUserTransactions();
+  }, []);
+
+  // Check if the user is an admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const currentUser = auth.currentUser;
+
+        if (currentUser) {
+          const idToken = await currentUser.getIdToken();
+
+          const userRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userRef);
+
+          if (userDoc.exists() && userDoc.data().admin) {
+            setIsAdmin(true);
+          }
+        }
+      } catch (error) {
+        console.log('Error checking admin status:', error);
+      }
+    };
+
+    checkAdminStatus();
   }, []);
 
   useEffect(() => {
@@ -112,6 +126,7 @@ const Dashboard = () => {
           toggleUserDrawer={toggleUserDrawer}
           selectedItem={selectedNavItem}
           setSelectedItem={setSelectedNavItem}
+          isAdmin={isAdmin} // Pass isAdmin to NavBar
         />
         <main className={`
           flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 transition-all duration-300 min-h-screen
@@ -123,6 +138,7 @@ const Dashboard = () => {
             <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
             <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
             <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+            {isAdmin && <Route path="/admin" element={<AdminPage />} />}
           </Routes>
         </main>
       </div>
