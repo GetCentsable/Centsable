@@ -117,11 +117,13 @@ const NavBar = ({ isOpen, toggleNavBar, isUserDrawerOpen, toggleUserDrawer, sele
               <img src="https://picsum.photos/100/100" alt="User avatar" className="w-12 h-12 rounded-full" />
             </button>
           </div>
-          <div className={`fixed top-16 left-0 w-full h-[calc(100vh-4rem)] bg-slate-700 transition-transform duration-300 ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'} z-40 overflow-y-auto`}>            <div className="h-full p-4">
+          <div className={`fixed top-16 left-0 w-full h-[calc(100vh-4rem)] bg-slate-700 transition-transform duration-300 ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'} z-40 overflow-y-auto`}>
+            <div className="h-full p-4">
               {renderNavContent()}
             </div>
           </div>
           {/* Add a spacer div to push content below the fixed navbar */}
+          <div className="h-16"></div>
         </>
       ) : (
         <div className={`fixed top-0 left-0 h-screen bg-slate-700 transition-all duration-300 ${isOpen ? 'w-64' : 'w-18'} flex flex-col z-40`}>

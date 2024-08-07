@@ -10,7 +10,6 @@ import Donations from './Donations';
 import Accounts from './Accounts';
 import UserDrawer from '../Components/General/UserDrawer';
 import TransactionContext from '../Context/TransactionsContext';
-import { translations } from '@aws-amplify/ui-react';
 
 const Dashboard = () => {
   const [isNavBarOpen, setIsNavBarOpen] = useState(true);
@@ -116,14 +115,14 @@ const Dashboard = () => {
         />
         <main className={`
           flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 transition-all duration-300 min-h-screen
-          ${isMobile ? 'mt-16' : (isNavBarOpen ? 'md:ml-64' : 'md:ml-20')}
+          ${isMobile ? 'pt-16' : (isNavBarOpen ? 'md:ml-64' : 'md:ml-20')}
         `}>
           <Routes>
-            <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} />} />
-            <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} />} />
-            <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} />} />
-            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} />} />
-            <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} />} />
+            <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
+            <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
+            <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+            <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
           </Routes>
         </main>
       </div>
