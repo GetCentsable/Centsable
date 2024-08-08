@@ -1,7 +1,19 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { app } from "../../Firebase/firebase";
+import { getAuth } from 'firebase/auth';
+import SimpleButton from "./SimpleButton";
+import { faXmark, faPlus } from "@fortawesome/free-solid-svg-icons";
+import UserContext from '../../Context/UserContext.jsx';
 
 const SearchResults = ({ results }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const {
+    recipientPreference,
+    recipientsLoaded,
+    setRecipientPreference,
+    setRecipientsLoaded,
+  } = useContext(UserContext);
+
   const itemsPerPage = 7;
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -12,6 +24,113 @@ const SearchResults = ({ results }) => {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  // Instantiate firebase auth
+  const auth = getAuth(app);
+
+  const addRecipient = async (recipient) => {
+    setRecipientsLoaded(false);
+    // console.log(recipient.id)
+
+    const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/addNewRecipient';
+
+    try {
+      const currentUser = auth.currentUser;
+
+      if (currentUser) {
+        const idToken = await currentUser.getIdToken();
+
+        const response = await fetch(path, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            uid: currentUser.uid,
+            recipient_id: recipient.id,
+            recipient_name: recipient.header,
+          }),
+        });
+
+        if (!response.ok) {
+          setRecipientPreference([]);
+          setRecipientsLoaded(false);
+          const errorData = await response.json();
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+        }
+
+        const data = await response.json();
+        if (!data) {
+          setRecipientPreference([]);
+          setRecipientsLoaded(false);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log(data);
+        setRecipientPreference(data.current_recipients);
+        setRecipientsLoaded(true);
+      } else {
+        throw new Error('No current user found');
+      }
+    } catch (err) {
+      console.log('There was an error fetching user recipient preferences', err);
+    } finally {
+      setRecipientsLoaded(true);
+    }
+  };
+
+  const removeRecipient = async (recipient) => {
+    setRecipientsLoaded(false);
+    // console.log(recipient.id)
+
+    const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/removeRecipient';
+
+    try {
+      const currentUser = auth.currentUser;
+
+      if (currentUser) {
+        const idToken = await currentUser.getIdToken();
+
+        const response = await fetch(path, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            uid: currentUser.uid,
+            recipient_id: recipient.id,
+            recipient_name: recipient.header,
+          }),
+        });
+
+        if (!response.ok) {
+          setRecipientPreference([]);
+          setRecipientsLoaded(false);
+          const errorData = await response.json();
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+        }
+
+        const data = await response.json();
+        if (!data) {
+          setRecipientPreference([]);
+          setRecipientsLoaded(false);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log(data);
+        setRecipientPreference(data.current_recipients);
+        setRecipientsLoaded(true);
+      } else {
+        throw new Error('No current user found');
+      }
+    } catch (err) {
+      console.log('There was an error fetching user recipient preferences', err);
+    } finally {
+      setRecipientsLoaded(true);
+    }
   };
 
   const renderPageNumbers = () => {
@@ -83,11 +202,21 @@ const SearchResults = ({ results }) => {
     <div className="w-full max-w-2xl border rounded-lg overflow-hidden flex flex-col min-h-[calc(100vh-20rem)]">
       <div className="flex-grow overflow-y-auto">
         {currentItems.map((item) => (
-          <div key={item.id} className="p-2 sm:p-4 border-b">
-            <h3 className="font-bold text-sm sm:text-base">{item.header}</h3>
-            <p className="text-xs sm:text-sm">Description: {item.description}</p>
-            <a className="text-xs sm:text-sm">Website: {item.website}</a>
-            <p className="text-xs sm:text-sm">Category: {item.category}</p>
+          <div className="flex justify-between items-center border-b" key={item.id}>
+            <div className="p-2 sm:p-4">
+              <h3 className="font-bold text-sm sm:text-base">{item.header}</h3>
+              <p className="text-xs sm:text-sm">Description: {item.description}</p>
+              <a className="text-xs sm:text-sm">Website: {item.website}</a>
+              <p className="text-xs sm:text-sm">Category: {item.category}</p>
+            </div>
+            <div className="mr-3 mb-3 self-end">
+              <SimpleButton
+                className={'text-nowrap'}
+                title={item.isSelected ? 'Remove' : 'Support'}
+                icon={item.isSelected ? faXmark : faPlus}
+                onClick={item.isSelected ? () => removeRecipient(item) : () => addRecipient(item) }
+              />
+            </div>
           </div>
         ))}
       </div>

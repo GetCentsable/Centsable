@@ -22,7 +22,7 @@ const logger = require("firebase-functions/logger");
 
 // Import the functions from the other files
 
-const { getLinkedAccounts, getUserTransactions } = require('./frontendFunctions');
+const { getLinkedAccounts, getUserTransactions, addNewRecipient, removeRecipient, getRecipientsForUser } = require('./frontendFunctions');
 const { createLinkToken, exchangePublicToken, loadAllUserTransactions } = require('./plaidFunctions');
 const { createPaymentIntent } = require('./stripeFunctions');
 const { triggerDailyLogs, triggerMonthlyLogs, processMonthlyLog} = require('./recipientMoneyLogAndMove');
@@ -31,6 +31,9 @@ const { triggerDailyLogs, triggerMonthlyLogs, processMonthlyLog} = require('./re
 // Export the frontend functions
 exports.getLinkedAccounts = getLinkedAccounts;
 exports.getUserTransactions = getUserTransactions;
+exports.addNewRecipient = addNewRecipient;
+exports.removeRecipient = removeRecipient;
+exports.getRecipientsForUser = getRecipientsForUser;
 
 // Export Plaid functions for API request
 exports.createLinkToken = createLinkToken;

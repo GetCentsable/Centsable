@@ -12,6 +12,7 @@ import Accounts from './Accounts';
 import AdminPage from '../Admin/AdminPage';
 import UserDrawer from '../Components/General/UserDrawer';
 import TransactionContext from '../Context/TransactionsContext';
+import UserContext from '../Context/UserContext.jsx';
 
 const Dashboard = () => {
   const [isNavBarOpen, setIsNavBarOpen] = useState(true);
@@ -20,10 +21,15 @@ const Dashboard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isAdmin, setIsAdmin] = useState(false);
   const {
-    transactions,
     setTransactions,
     setTransactionsLoaded,
   } = useContext(TransactionContext);
+  const {
+    recipientPreference,
+    recipientsLoaded,
+    setRecipientPreference,
+    setRecipientsLoaded,
+  } = useContext(UserContext);
 
   // Instantiate firebase auth
   const auth = getAuth(app);
@@ -76,6 +82,57 @@ const Dashboard = () => {
     };
 
     getUserTransactions();
+  }, []);
+
+  // Checks current user recipient preference and loads into context
+  useEffect(() => {
+    const getRecipientsForUser = async () => {
+      const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/getRecipientsForUser';
+
+      try {
+        const currentUser = auth.currentUser;
+
+        if (currentUser) {
+          const idToken = await currentUser.getIdToken();
+
+          const response = await fetch(path, {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+              uid: currentUser.uid,
+            }),
+          });
+
+          if (!response.ok) {
+            setRecipientPreference([]);
+            setRecipientsLoaded(false);
+            const errorData = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+          }
+
+          const data = await response.json();
+          if (!data) {
+            setRecipientPreference([]);
+            setRecipientsLoaded(false);
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          // console.log(data);
+          setRecipientPreference(data.current_recipients);
+          setRecipientsLoaded(true);
+          // console.log(recipientPreference);
+        } else {
+          throw new Error('No current user found');
+        }
+      } catch (err) {
+        console.log('There was an error fetching user recipient preferences', err);
+      }
+    };
+
+    getRecipientsForUser();
   }, []);
 
   // Check if the user is an admin
@@ -136,7 +193,7 @@ const Dashboard = () => {
             <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
             <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
             <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
-            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} />} />
             <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
             {isAdmin && <Route path="/admin" element={<AdminPage />} />}
           </Routes>
