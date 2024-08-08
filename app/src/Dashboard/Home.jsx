@@ -67,10 +67,6 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem, isMobile }) => {
         selectedCategory={selectedCategory} 
         contributions={contributions}
       />
-      
-      <div className="hidden lg:block">
-        <FeaturedSection />
-      </div>
     </div>
   );
 };
