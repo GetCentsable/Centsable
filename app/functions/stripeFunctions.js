@@ -196,48 +196,48 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
 
       const results = [];
 
-      // Extract user and date from the content
-      const userFromRequest = content[0]?.user || null;
-      const dateFromRequest = content[0]?.date || null;
-      console.log(`userFromRequest: ${userFromRequest}`);
-      console.log(`dateFromRequest: ${dateFromRequest}`);
+      // Iterate over each entry in the content array
+      for (const entry of content) {
+        const userFromRequest = entry.user || null;
+        const dateFromRequest = entry.date || null;
 
-      // Fetch all users if no user is provided
-      const db = admin.firestore();
-      const usersSnapshot = await db.collection('users').get();
-      const allUsers = usersSnapshot.docs.map(doc => doc.id);
+        console.log(`Processing user: ${userFromRequest}, date: ${dateFromRequest}`);
 
-      // // Determine the dates to check
-      const datesToCheck = dateFromRequest ? [dateFromRequest] : dateStrings;
-      console.log(`datesToCheck: ${datesToCheck}`);
+        // Fetch all users if no user is provided
+        const db = admin.firestore();
+        const usersSnapshot = await db.collection('users').get();
+        const allUsers = usersSnapshot.docs.map(doc => doc.id);
 
-      for (const date of datesToCheck) {
+        // Determine the dates to check
+        const datesToCheck = dateFromRequest ? [dateFromRequest] : dateStrings;
         const userIdsToCheck = userFromRequest ? [userFromRequest] : allUsers;
-        console.log(`userIdsToCheck: ${userIdsToCheck}`);
 
-        for (const userId of userIdsToCheck) {
-          const totalRoundup = await CalculateRoundups(userId, date);
+        // Process each date and user combination
+        for (const date of datesToCheck) {
+          for (const userId of userIdsToCheck) {
+            const totalRoundup = await CalculateRoundups(userId, date);
 
-          if (totalRoundup === 0) {
-            results.push({ user: userId, date, error: 'No transactions found or total roundup is zero.' });
-            continue;
+            if (totalRoundup === 0) {
+              results.push({ user: userId, date, error: 'No transactions found or total roundup is zero.' });
+              continue;
+            }
+            if (totalRoundup < 0.5) {
+              results.push({ user: userId, date, error: 'Total roundup is less than $0.50.' });
+              continue;
+            }
+
+            // Update the bank account before creating the payment intent
+            await updateBankAccount(userId, date, totalRoundup);
+
+            const amountInCents = Math.round(totalRoundup * 100);
+            const paymentIntent = await stripe.paymentIntents.create({
+              amount: amountInCents,
+              currency: "usd",
+            });
+
+            results.push({ user: userId, clientSecret: paymentIntent.client_secret, date });
+            console.log(`Payment intent created for user ${userId} on date ${date}`);
           }
-          if (totalRoundup < 0.5) {
-            results.push({ user: userId, date, error: 'Total round up is less than $0.50' });
-            continue;
-          }
-
-          // Update the bank account before creating the payment intent
-          await updateBankAccount(userId, date, totalRoundup);
-
-          const amountInCents = Math.round(totalRoundup * 100);
-          const paymentIntent = await stripe.paymentIntents.create({
-            amount: amountInCents,
-            currency: "usd",
-          });
-
-          results.push({ user: userId, clientSecret: paymentIntent.client_secret, date });
-          // console.log(`Payment intent created for user ${userId} on date ${date}`);
         }
       }
 
@@ -247,6 +247,7 @@ exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
     }
   });
 });
+
 
 
 // exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
