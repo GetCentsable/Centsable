@@ -53,20 +53,20 @@ const ContributionsSection = ({ selectedCategory, contributions }) => {
   }, [selectedCategory, contributions]);
 
   return (
-    <div className="pt-14 max-w-7xl mx-auto">
+    <div className="pt-4 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Your Contributions</h1>
       
       {/* Large screens: Show all contributions with flip effect */}
       <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4">
         {contributions.map((contrib) => (
-          <div key={contrib.title} className="h-[400px]">
+          <div key={contrib.title} className="h-[300px]">
             <ContributionCard contribution={contrib} />
           </div>
         ))}
       </div>
       
       {/* Medium screens (tablet): Show selected contribution's pie chart and community list side by side */}
-      <div className="hidden md:flex lg:hidden h-[400px]">
+      <div className="hidden md:flex lg:hidden h-[300px]">
         <div className="w-1/2 pr-4">
           <div className="bg-white p-4 rounded-lg h-full">
             <PieChart total={selectedContribution.total} communities={selectedContribution.communities} />
@@ -82,7 +82,7 @@ const ContributionsSection = ({ selectedCategory, contributions }) => {
       </div>
       
       {/* Small screens: Show selected contribution with flip effect */}
-      <div className="md:hidden h-[400px]">
+      <div className="md:hidden h-[300px]">
         <ContributionCard contribution={selectedContribution} />
       </div>
     </div>

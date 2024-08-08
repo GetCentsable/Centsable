@@ -193,7 +193,7 @@ const Dashboard = () => {
             <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
             <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
             <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
-            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} />} />
             <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
             {isAdmin && <Route path="/admin" element={<AdminPage />} />}
           </Routes>
