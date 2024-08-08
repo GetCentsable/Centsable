@@ -11,8 +11,9 @@ const AdminPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [dates, setDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
+  const [months, setMonths] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState('');
 
-  // Fetch users from Firestore on component mount
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -24,73 +25,105 @@ const AdminPage = () => {
         console.error('Error fetching users:', error);
       }
     };
-
     fetchUsers();
   }, [db]);
 
-  // Fetch available dates based on selected user
+  useEffect(() => {
+    const fetchAvailableMonths = async () => {
+      try {
+        const holdingAccountRef = collection(db, 'bank_accounts/TEBGHPGaGH8imJTyeasV/monthly_logs');
+        const monthsSnapshot = await getDocs(holdingAccountRef);
+        const availableMonths = monthsSnapshot.docs.map(doc => doc.id);
+        setMonths(['all', ...availableMonths]); 
+      } catch (error) {
+        console.error('Error fetching available months:', error);
+        setMonths([]);
+      }
+    };
+    fetchAvailableMonths();
+  }, [db]);
+
   useEffect(() => {
     const fetchUserTransactionDates = async () => {
       if (!selectedUser || selectedUser === 'all') {
-        setDates([]);
+        setDates(['all']);
         return;
       }
-
       try {
         const transactionsCollection = collection(db, `users/${selectedUser.id}/transactions`);
         const transactionSnapshot = await getDocs(transactionsCollection);
         const transactionDates = transactionSnapshot.docs.map(doc => doc.id);
-        setDates(['all', ...transactionDates]); // Include "All Dates" option
+        setDates(['all', ...transactionDates]); 
       } catch (error) {
         console.error('Error fetching transaction dates:', error);
         setDates([]);
       }
     };
-
     fetchUserTransactionDates();
   }, [db, selectedUser]);
 
   const handleUserChange = (e) => {
     const userId = e.target.value;
     setSelectedUser(userId === 'all' ? 'all' : users.find(user => user.id === userId));
-    setSelectedDate(''); // Clear selected date when user changes
+    setSelectedDate(''); 
   };
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
   };
 
+  const handleMonthChange = (e) => {
+    setSelectedMonth(e.target.value);
+  };
+
   const triggerFunction = async (functionName) => {
-    if (!selectedUser && functionName === 'createPaymentIntent') {
-      alert('Please select a user.');
+    if ((functionName === 'processMonthlyLog' || functionName === 'triggerMonthlyLogs') && !selectedMonth) {
+      alert('Please select a month.');
       return;
     }
-    if (!selectedDate && functionName === 'createPaymentIntent') {
-      alert('Please select a date.');
-      return;
-    }
-  
+
     const path = `https://us-central1-centsable-6f179.cloudfunctions.net/${functionName}`;
-  
     try {
       const currentUser = auth.currentUser;
       if (currentUser) {
         const idToken = await currentUser.getIdToken();
-  
-        // Format the request body according to the expected structure
         let requestBody;
-        if (functionName === 'createPaymentIntent') {
-          requestBody = {
-            content: selectedDate === 'all' 
-              ? dates.map(date => ({ date, user: selectedUser.id })) // Create an array with all dates if 'all' is selected
-              : [{ date: selectedDate, user: selectedUser.id }]
-          };
+
+        if (functionName === 'createPaymentIntent' || functionName === 'triggerDailyLogs') {
+          if (selectedUser === 'all' && selectedDate === 'all') {
+            const allUsersAndDates = await Promise.all(
+              users.map(async (user) => {
+                const transactionsCollection = collection(db, `users/${user.id}/transactions`);
+                const transactionSnapshot = await getDocs(transactionsCollection);
+                return transactionSnapshot.docs.map(doc => ({ date: doc.id, user: user.id }));
+              })
+            );
+            requestBody = { content: allUsersAndDates.flat() };
+          } else if (selectedUser === 'all') {
+            const allUsersForDate = users.map(user => ({ date: selectedDate, user: user.id }));
+            requestBody = { content: allUsersForDate };
+          } else if (selectedDate === 'all') {
+            requestBody = {
+              content: dates.filter(date => date !== 'all').map(date => ({ date, user: selectedUser.id }))
+            };
+          } else {
+            requestBody = {
+              content: [{ date: selectedDate, user: selectedUser.id }]
+            };
+          }
+        } else if (functionName === 'processMonthlyLog' || functionName === 'triggerMonthlyLogs') {
+          if (selectedMonth === 'all') {
+            requestBody = { months: months.filter(month => month !== 'all') };
+          } else {
+            requestBody = { months: [selectedMonth] };
+          }
         } else {
-          requestBody = {
-            uid: selectedUser.id
-          };
+          requestBody = { uid: selectedUser.id };
         }
-  
+
+        // Log the actual content of the requestBody
+        console.log('Request body being sent:', JSON.stringify(requestBody, null, 2));
+
         const response = await fetch(path, {
           method: "POST",
           headers: {
@@ -99,10 +132,9 @@ const AdminPage = () => {
           },
           body: JSON.stringify(requestBody),
         });
-  
+
         if (response.ok) {
-          const data = await response.json();
-          alert(`${functionName} triggered successfully for user ${selectedUser.username}!`);
+          alert(`${functionName} triggered successfully!`);
         } else {
           const errorData = await response.json();
           throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error}`);
@@ -115,7 +147,7 @@ const AdminPage = () => {
       alert(`Failed to trigger ${functionName}: ${err.message}`);
     }
   };
-  
+
 
   return (
     <div className="admin-page p-6">
@@ -139,7 +171,6 @@ const AdminPage = () => {
         value={selectedDate} 
         onChange={handleDateChange}
         className="mb-4 p-2 border border-gray-300 rounded"
-        disabled={!selectedUser || selectedUser === 'all'}
       >
         <option value="" disabled>Select a date</option>
         <option value="all">All Dates</option>
@@ -150,17 +181,26 @@ const AdminPage = () => {
         ))}
       </select>
 
+      <select 
+        value={selectedMonth} 
+        onChange={handleMonthChange}
+        className="mb-4 p-2 border border-gray-300 rounded"
+      >
+        <option value="" disabled>Select a month</option>
+        <option value="all">All Months</option>
+        {months.filter(month => month !== 'all').map((month) => (
+          <option key={month} value={month}>
+            {month}
+          </option>
+        ))}
+      </select>
+
       <div className="flex flex-col space-y-4">
         <AdminButton title="Generate Daily Logs" onClick={() => triggerFunction('triggerDailyLogs')} />
         <AdminButton title="Generate Monthly Logs" onClick={() => triggerFunction('triggerMonthlyLogs')} />
         <AdminButton title="Process Monthly Logs" onClick={() => triggerFunction('processMonthlyLog')} />
-        <AdminButton title="Exchange Public Token" onClick={() => triggerFunction('exchangePublicToken')} />
-        <AdminButton title="Create Link Token" onClick={() => triggerFunction('createLinkToken')} />
-        <AdminButton title="Get User Transactions" onClick={() => triggerFunction('getUserTransactions')} />
-        <AdminButton title="Trigger Immediate Transfer" onClick={() => triggerFunction('triggerImmediateTransfer')} />
         <AdminButton title="Load All User Transactions" onClick={() => triggerFunction('loadAllUserTransactions')} />
         <AdminButton title="Create Payment Intent" onClick={() => triggerFunction('createPaymentIntent')} />
-        <AdminButton title="Get Linked Accounts" onClick={() => triggerFunction('getLinkedAccounts')} />
       </div>
     </div>
   );
