@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useContext } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import PieChart from './PieChart';
 import CommunitiesList from './CommunitiesList';
@@ -11,10 +11,9 @@ import 'swiper/css/effect-flip';
 // import required modules
 import { EffectFlip } from 'swiper/modules';
 
-const PieChartSection = ({ weeklyTotal, communities, onUpdateCommunities, onClick }) => {
+const PieChartSection = ({ weeklyTotal, onUpdateCommunities, onClick }) => {
   const swiperRef = useRef(null);
-  const [localCommunities, setLocalCommunities] = useState(communities);
-
+  // const [localCommunities, setLocalCommunities] = useState(communities);
   const handleEllipsisClick = (e) => {
     e.stopPropagation();
     if (swiperRef.current && swiperRef.current.swiper) {
@@ -23,15 +22,15 @@ const PieChartSection = ({ weeklyTotal, communities, onUpdateCommunities, onClic
   };
 
   const handleSave = (updatedCommunities) => {
-    setLocalCommunities(updatedCommunities);
-    onUpdateCommunities(updatedCommunities);
-    if (swiperRef.current && swiperRef.current.swiper) {
-      swiperRef.current.swiper.slidePrev();
-    }
+    // setLocalCommunities(updatedCommunities);
+    // onUpdateCommunities(updatedCommunities);
+    // if (swiperRef.current && swiperRef.current.swiper) {
+    //   swiperRef.current.swiper.slidePrev();
+    // }
   };
 
   const handleCancel = () => {
-    setLocalCommunities(communities); // Reset to original communities
+    // setLocalCommunities(communities); // Reset to original communities
     if (swiperRef.current && swiperRef.current.swiper) {
       swiperRef.current.swiper.slidePrev();
     }
@@ -65,18 +64,17 @@ const PieChartSection = ({ weeklyTotal, communities, onUpdateCommunities, onClic
             </div>
           ) : (
             <div className="mb-8" onClick={onClick}>
-              <PieChart total={Number(weeklyTotal)} communities={localCommunities} />
+              <PieChart total={Number(weeklyTotal)} />
             </div>
           )}
           <div className="border-t pt-6">
             <h3 className="font-bold text-lg mb-4">Communities</h3>
-            <CommunitiesList communities={localCommunities} />
+            <CommunitiesList />
           </div>
         </div>
       </SwiperSlide>
       <SwiperSlide>
         <EditPercentages
-          communities={localCommunities}
           onSave={handleSave}
           onCancel={handleCancel}
         />

@@ -1,15 +1,13 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { app } from "../../Firebase/firebase";
 import { getAuth } from 'firebase/auth';
 import SimpleButton from "./SimpleButton";
 import { faXmark, faPlus } from "@fortawesome/free-solid-svg-icons";
 import UserContext from '../../Context/UserContext.jsx';
 
-const SearchResults = ({ results }) => {
+const SearchResults = ({ results, setModalMessage }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const {
-    recipientPreference,
-    recipientsLoaded,
     setRecipientPreference,
     setRecipientsLoaded,
   } = useContext(UserContext);
@@ -54,21 +52,29 @@ const SearchResults = ({ results }) => {
           }),
         });
 
-        if (!response.ok) {
-          setRecipientPreference([]);
-          setRecipientsLoaded(false);
-          const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
-        }
-
         const data = await response.json();
+
         if (!data) {
-          setRecipientPreference([]);
-          setRecipientsLoaded(false);
+          // setRecipientPreference([]);
+          setRecipientsLoaded(true);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        console.log(data);
+        if (response.status === 400 && data.max) {
+          // Show a message to the user indicating they have reached the max recipients
+          setModalMessage('You have reached the maximum allowed recipients (8). You cannot add more.');
+          console.log('User has hit max recipients');
+          setRecipientPreference(data.current_recipients);
+          return;
+        }
+
+        if (!response.ok) {
+          // setRecipientPreference([]);
+          setRecipientsLoaded(true);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${data.message}`);
+        }
+
+        // console.log(data);
         setRecipientPreference(data.current_recipients);
         setRecipientsLoaded(true);
       } else {

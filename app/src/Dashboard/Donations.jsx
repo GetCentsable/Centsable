@@ -14,14 +14,6 @@ const Donations = ({ isUserDrawerOpen }) => {
   const [mobileView, setMobileView] = useState('pie');
   const [desktopView, setDesktopView] = useState('summary');
   const { transactions, transactionsLoaded } = useContext(TransactionContext);
-  const [communities, setCommunities] = useState([
-    { name: 'Animal Rescue Foundation', percentage: 30 },
-    { name: 'Tolarian Community College', percentage: 20 },
-    { name: 'Rings of Chaos', percentage: 20 },
-    { name: 'Tulsa Makerspace', percentage: 15 },
-    { name: 'Tulsa Spotlight Theatre', percentage: 10 },
-    { name: 'Centsable', percentage: 5 },
-  ]);
 
   useEffect(() => {
     if (!transactionsLoaded) return;
@@ -52,7 +44,7 @@ const Donations = ({ isUserDrawerOpen }) => {
   };
 
   const handleUpdateCommunities = (updatedCommunities) => {
-    setCommunities(updatedCommunities);
+    // setCommunities(updatedCommunities);
   };
 
   const handleSummaryClick = (date) => {
@@ -112,7 +104,6 @@ const Donations = ({ isUserDrawerOpen }) => {
           `}>
             <PieChartSection 
               weeklyTotal={weeklyTotal} 
-              communities={communities} 
               onUpdateCommunities={handleUpdateCommunities}
               onClick={handlePieClick}
             />
