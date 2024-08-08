@@ -34,7 +34,7 @@ exports.getLinkedAccounts = functions.https.onRequest((req, res) => {
           const uid = req.body.uid;
 
           if (!uid) {
-            return res.status(500).send({ error: 'uid is required' });
+            return res.status(400).send({ error: 'uid is required' });
           }
 
           // Create a reference to the user linked accounts/token doc
@@ -113,6 +113,10 @@ exports.getUserTransactions = functions.https.onRequest((req, res) => {
           // Get the user's ID from the request
           const uid = req.body.uid;
 
+          if (!uid) {
+            return res.status(400).send({ error: 'uid is required' });
+          }
+
           // Create a reference to the user's transactions sub-collection
           const userTransCollectionRef = db.collection('users').doc(uid).collection('transactions');
 
@@ -172,6 +176,232 @@ exports.getUserTransactions = functions.https.onRequest((req, res) => {
       });
     } catch (error) {
       console.error('Authentication error:', error);
+      res.status(403).send('Unauthorized');
+    }
+  });
+});
+
+// Function adds selected recipient to user collection
+// and return all recipients
+exports.addNewRecipient = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      await authenticate(req, res, async () => {
+        try {
+          // Extract uid from body
+          const uid = req.body.uid;
+          const recipient_id = req.body.recipient_id;
+          const recipient_name = req.body.recipient_name;
+
+          if (!uid || !recipient_id || !recipient_name) {
+            return res.status(400).send({ error: 'Recipient name, uid and recipient id is required' });
+          }
+
+          // Step 1:
+          // Find the user collection that matches uid
+
+          // Create referene to matching doc
+          const user_doc_ref = db.collection('users').doc(uid);
+
+          // Create snapshot of doc to read data
+          const user_doc_snap = await user_doc_ref.get();
+
+          // Step 2:
+          // Grab the current recipients array
+
+          if (user_doc_snap.exists) {
+            // Get the data from the document snapshot
+            const user_data = user_doc_snap.data();
+            const current_recipients = user_data.recipients || [];
+            
+            // Check if the recipients already exists
+            const recipient_exists = current_recipients.some(recipient => recipient.recipient_id === recipient_id);
+
+            if (!recipient_exists) {
+              // Step 3:
+              // Calculate the total recipients + the new one being added
+              const total_recipients = current_recipients.length + 1;
+
+              // Step 4:
+              // Adjust the percentages to = 100% / total recipients
+
+              // Calculate base percentage and distribute it
+              const base_percentage = Math.ceil(100 / total_recipients);
+              const percentages = Array(total_recipients).fill(base_percentage);
+
+              // Adjust the last recipient's percentage to make the total 100%
+              const total_base_percentage = base_percentage * total_recipients;
+              const difference = total_base_percentage - 100;
+              percentages[percentages.length - 1] -= difference;
+
+              // Assign percentages to current recipients
+              current_recipients.forEach((recipient, index) => {
+                recipient.percentage = percentages[index];
+              });
+              
+              // Step 5:
+              // Merge the new recipient to the current recipient array
+              const new_recipient = {
+                recipient_id,
+                recipient_name,
+                percentage: percentages[percentages.length - 1]
+              };
+              current_recipients.push(new_recipient);
+              
+              // Update the document in Firestore
+              await user_doc_ref.update({ recipients: current_recipients });
+
+              // Step 6:
+              // Send the data back to front end
+              return res.status(200).send({ success: true, current_recipients });
+            } else {
+              return res.status(400).send({ error: 'Recipient already exists' });
+            }
+          } else {
+            return res.status(404).send({ error: 'User not found' });
+          }
+        } catch (error) {
+          console.error('Error adding recipient:', error.message);
+          res.status(500).send({ error: 'Error adding recipient' });
+        }
+      });
+    } catch (error) {
+      console.error('Authentication error:', error.message);
+      res.status(403).send('Unauthorized');
+    }
+  });
+});
+
+// Function removes a passed in recipient from users preferences
+exports.removeRecipient = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      await authenticate(req, res, async () => {
+        try {
+          // Extract uid and recipient_id from body
+          const uid = req.body.uid;
+          const recipient_id = req.body.recipient_id;
+
+          if (!uid || !recipient_id) {
+            return res.status(400).send({ error: 'Recipient id and uid are required' });
+          }
+
+          // Step 1:
+          // Find the user collection that matches uid
+
+          // Create reference to matching doc
+          const user_doc_ref = db.collection('users').doc(uid);
+
+          // Create snapshot of doc to read data
+          const user_doc_snap = await user_doc_ref.get();
+
+          // Step 2:
+          // Grab the current recipients array
+
+          if (user_doc_snap.exists) {
+            // Get the data from the document snapshot
+            const user_data = user_doc_snap.data();
+            let current_recipients = user_data.recipients || [];
+            
+            // Check if the recipient exists
+            const recipient_exists = current_recipients.some(recipient => recipient.recipient_id === recipient_id);
+
+            if (recipient_exists) {
+              // Step 3:
+              // Remove the recipient from the array
+              current_recipients = current_recipients.filter(recipient => recipient.recipient_id !== recipient_id);
+
+              // Step 4:
+              // Calculate the total recipients after removal
+              const total_recipients = current_recipients.length;
+
+              // Step 5:
+              // Adjust the percentages to = 100% / total recipients
+
+              if (total_recipients > 0) {
+                // Calculate base percentage and distribute it
+                const base_percentage = Math.ceil(100 / total_recipients);
+                const percentages = Array(total_recipients).fill(base_percentage);
+
+                // Adjust the last recipient's percentage to make the total 100%
+                const total_base_percentage = base_percentage * total_recipients;
+                const difference = total_base_percentage - 100;
+                percentages[percentages.length - 1] -= difference;
+
+                // Assign percentages to current recipients
+                current_recipients.forEach((recipient, index) => {
+                  recipient.percentage = percentages[index];
+                });
+              }
+
+              // Update the document in Firestore
+              await user_doc_ref.update({ recipients: current_recipients });
+
+              // Step 6:
+              // Send the data back to front end
+              return res.status(200).send({ success: true, current_recipients });
+            } else {
+              return res.status(400).send({ error: 'Recipient not found' });
+            }
+          } else {
+            return res.status(404).send({ error: 'User not found' });
+          }
+        } catch (error) {
+          console.error('Error removing recipient:', error.message);
+          res.status(500).send({ error: 'Error removing recipient' });
+        }
+      });
+    } catch (error) {
+      console.error('Authentication error:', error.message);
+      res.status(403).send('Unauthorized');
+    }
+  });
+});
+
+// Function returns recipient array to front end for matching user
+exports.getRecipientsForUser = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      await authenticate(req, res, async () => {
+        try {
+          // Extract uid from body
+          const uid = req.body.uid;
+
+          if (!uid) {
+            return res.status(400).send({ error: 'Uid is required' });
+          }
+
+          // Step 1:
+          // Find the user collection that matches uid
+
+          // Create referene to matching doc
+          const user_doc_ref = db.collection('users').doc(uid);
+
+          // Create snapshot of doc to read data
+          const user_doc_snap = await user_doc_ref.get();
+
+          // Step 2:
+          // Grab the current recipients array
+
+          if (user_doc_snap.exists) {
+            // Get the data from the document snapshot
+            const user_data = user_doc_snap.data();
+            const current_recipients = user_data.recipients || [];
+
+            // Step 3:
+            // Send the recipient array to the front end
+            return res.status(200).send({ success: true, current_recipients });
+
+          } else {
+            return res.status(404).send({ error: 'User not found' });
+          }
+        } catch (error) {
+          console.error('Error fetching recipient:', error.message);
+          res.status(500).send({ error: 'Error fetching recipient' });
+        }
+      });
+    } catch (error) {
+      console.error('Authentication error:', error.message);
       res.status(403).send('Unauthorized');
     }
   });
