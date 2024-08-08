@@ -3,6 +3,7 @@ import AdminButton from '../Components/General/AdminButton';
 import { getAuth } from 'firebase/auth';
 import { app } from "../Firebase/firebase.js";
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import PieChart from '../Components/General/PieChart';
 
 const AdminPage = () => {
   const auth = getAuth(app);
@@ -13,6 +14,11 @@ const AdminPage = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [transactionsLoaded, setTransactionsLoaded] = useState(false);
+  const [totalRoundup, setTotalRoundup] = useState(0);
+  const [recipientData, setRecipientData] = useState([]);
+  const [monthlyLogData, setMonthlyLogData] = useState({});
+  const [allUserData, setAllUserData] = useState({});
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -62,10 +68,83 @@ const AdminPage = () => {
     fetchUserTransactionDates();
   }, [db, selectedUser]);
 
+  useEffect(() => {
+    if (!selectedUser) return;
+
+    const fetchTransactionData = async () => {
+        setTransactionsLoaded(false);
+        setTotalRoundup(0);
+        setRecipientData([]);
+
+        try {
+            let transactions = [];
+            if (selectedUser === 'all') {
+                // Fetch transactions for all users
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                for (const userDoc of usersSnapshot.docs) {
+                    const transactionsSnapshot = await getDocs(collection(db, `users/${userDoc.id}/transactions`));
+                    transactions.push(...transactionsSnapshot.docs.map(doc => doc.data()));
+                }
+            } else {
+                // Fetch transactions for the selected user
+                const transactionsSnapshot = await getDocs(collection(db, `users/${selectedUser.id}/transactions`));
+                transactions = transactionsSnapshot.docs.map(doc => doc.data());
+            }
+
+            console.log('Fetched Transactions:', transactions);
+
+            let totalRoundupAmount = 0;
+            let communityData = {};
+
+            transactions.forEach((transaction) => {
+                // Iterate through the keys in each transaction object
+                Object.values(transaction).forEach((transactionData) => {
+                    console.log('Processing Transaction:', transactionData);
+
+                    // Check if the transactionData has round_up and distributions
+                    if (transactionData && transactionData.round_up) {
+                        totalRoundupAmount += transactionData.round_up || 0;
+
+                        if (Array.isArray(transactionData.distributions)) {
+                            transactionData.distributions.forEach((distribution) => {
+                                const { recipient_name, transfer_amount } = distribution;
+                                if (recipient_name && transfer_amount) {
+                                    if (!communityData[recipient_name]) {
+                                        communityData[recipient_name] = 0;
+                                    }
+                                    communityData[recipient_name] += transfer_amount;
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            console.log('Total Roundup Amount:', totalRoundupAmount);
+            console.log('Community Data:', communityData);
+
+            setTotalRoundup(totalRoundupAmount);
+            setRecipientData(Object.entries(communityData).map(([name, amount]) => ({
+                name,
+                percentage: (amount / totalRoundupAmount) * 100,
+            })));
+            setTransactionsLoaded(true);
+        } catch (error) {
+            console.error('Error fetching transaction data:', error);
+            setTransactionsLoaded(false);
+        }
+    };
+
+    fetchTransactionData();
+}, [db, selectedUser, selectedDate]);
+
+
+
   const handleUserChange = (e) => {
     const userId = e.target.value;
     setSelectedUser(userId === 'all' ? 'all' : users.find(user => user.id === userId));
-    setSelectedDate(''); 
+    setSelectedDate('');
+    setTransactionsLoaded(false);
   };
 
   const handleDateChange = (e) => {
@@ -148,7 +227,6 @@ const AdminPage = () => {
     }
   };
 
-
   return (
     <div className="admin-page p-6">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
@@ -202,6 +280,32 @@ const AdminPage = () => {
         <AdminButton title="Load All User Transactions" onClick={() => triggerFunction('loadAllUserTransactions')} />
         <AdminButton title="Create Payment Intent" onClick={() => triggerFunction('createPaymentIntent')} />
       </div>
+
+      {/* Pie Chart Section */}
+      {transactionsLoaded && (
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h2 className="text-lg font-bold mb-2">Recipient Breakdown</h2>
+            <PieChart total={totalRoundup} communities={recipientData} />
+          </div>
+          {selectedUser === 'all' && (
+            <>
+              <div>
+                <h2 className="text-lg font-bold mb-2">Monthly Log Totals</h2>
+                <PieChart total={Object.values(monthlyLogData).reduce((a, b) => a + b, 0)} communities={Object.entries(monthlyLogData).map(([month, amount]) => ({ name: month, percentage: (amount / Object.values(monthlyLogData).reduce((a, b) => a + b, 0)) * 100 }))} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold mb-2">Holding Account Overview</h2>
+                <PieChart total={allUserData.balance} communities={[
+                  { name: 'Balance', percentage: (allUserData.balance / (allUserData.balance + allUserData.paid + allUserData.received)) * 100 },
+                  { name: 'Paid', percentage: (allUserData.paid / (allUserData.balance + allUserData.paid + allUserData.received)) * 100 },
+                  { name: 'Received', percentage: (allUserData.received / (allUserData.balance + allUserData.paid + allUserData.received)) * 100 }
+                ]} />
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
