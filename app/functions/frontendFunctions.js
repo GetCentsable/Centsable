@@ -30,11 +30,11 @@ exports.getLinkedAccounts = functions.https.onRequest((req, res) => {
     try {
       await authenticate(req, res, async () => {
         try {
-          // Extract uid from body
+          // Extract parameters from body
           const uid = req.body.uid;
 
           if (!uid) {
-            return res.status(400).send({ error: 'uid is required' });
+            return res.status(400).send({ error: 'Uid, institution name, and account name is required' });
           }
 
           // Create a reference to the user linked accounts/token doc
@@ -71,6 +71,7 @@ exports.getLinkedAccounts = functions.https.onRequest((req, res) => {
 
                 // Create account object and add it to account array
                 const user_account_object = {
+                  institution_name: institution_name,
                   mask: mask,
                   account_name: account_name,
                   subtype: subtype,
@@ -94,6 +95,79 @@ exports.getLinkedAccounts = functions.https.onRequest((req, res) => {
         } catch (error) {
           console.error('Error fetching linked accounts:', error.message);
           res.status(500).send({ error: 'Error fetching linked accounts' });
+        }
+      });
+    } catch (error) {
+      console.error('Authentication error:', error.message);
+      res.status(403).send('Unauthorized');
+    }
+  });
+});
+
+// Function removes a linked account from the db
+exports.removeLinkedAccount = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      await authenticate(req, res, async () => {
+        try {
+          // Extract parameters from body
+          const uid = req.body.uid;
+          const institution_name = req.body.bank;
+          const account_name = req.body.account;
+
+          if (!uid || !institution_name || !account_name) {
+            return res.status(400).send({ error: 'Uid, institution name, and account name are required' });
+          }
+
+          // Create a reference to the user linked accounts/token doc
+          const user_token_ref = db.collection('users_tokens').doc(uid);
+
+          // Create a snapshot of the doc to read data
+          const user_token_doc = await user_token_ref.get();
+
+          // Ensure doc exists and is not empty
+          if (!user_token_doc.exists) {
+            return res.status(500).send({ error: 'User does not have linked accounts' });
+          }
+
+          // Retrieve document data
+          let user_accounts_data = user_token_doc.data();
+
+          // Check if the user has any linked banks
+          if (!user_accounts_data.banks || !Array.isArray(user_accounts_data.banks)) {
+            return res.status(500).send({ error: 'No banks linked for the user' });
+          }
+
+          // Find the bank by institution name
+          const bankIndex = user_accounts_data.banks.findIndex(bank => bank.institution_name === institution_name);
+
+          if (bankIndex === -1) {
+            return res.status(404).send({ error: 'Bank not found' });
+          }
+
+          // Find the account by account name within the specified bank
+          const accountIndex = user_accounts_data.banks[bankIndex].accounts.findIndex(account => account.name === account_name);
+
+          if (accountIndex === -1) {
+            return res.status(404).send({ error: 'Account not found' });
+          }
+
+          // Remove the account from the bank's accounts array
+          user_accounts_data.banks[bankIndex].accounts.splice(accountIndex, 1);
+
+          // If the bank has no more accounts, remove the bank as well
+          if (user_accounts_data.banks[bankIndex].accounts.length === 0) {
+            user_accounts_data.banks.splice(bankIndex, 1);
+          }
+
+          // Update the Firestore document with the modified accounts data
+          await user_token_ref.update({ banks: user_accounts_data.banks });
+
+          // Return the updated linked accounts
+          res.status(200).send({ sucess: true });
+        } catch (error) {
+          console.error('Error removing linked account:', error.message);
+          res.status(500).send({ error: 'Error removing linked account' });
         }
       });
     } catch (error) {
@@ -218,7 +292,7 @@ exports.addNewRecipient = functions.https.onRequest((req, res) => {
             const recipient_exists = current_recipients.some(recipient => recipient.recipient_id === recipient_id);
 
             // Check if user is at maximum recipients of 8
-            if (current_recipients.length >= 8) {
+            if (current_recipients.length >= 5) {
               return res.status(400).send({ message: 'User has reach maximum allowed recipients', max: true, current_recipients });
             }
 

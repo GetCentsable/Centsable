@@ -7,7 +7,7 @@ const initialState = {
   linkCallStarted: false,
   linkToken: "",
   linkTokenRetrieved: false,
-  linked_accounts: null,
+  linked_accounts: [],
   link_ready: false,
   itemId: null,
   isError: false,

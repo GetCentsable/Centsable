@@ -2,7 +2,7 @@
 import { faGear } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const Card = ({ bank_name, account_name, mask }) => {
+const Card = ({ bank_name, account_name, mask, onClick }) => {
   const cardColor = {
     "Arvest Bank - Online Banking": "bg-blue-500",
     "Bank of America": "bg-red-600",
@@ -20,9 +20,11 @@ const Card = ({ bank_name, account_name, mask }) => {
         </div>
         <div className="relative z-10">
           <div className="flex justify-between items-center mb-16">
-            <h2 className="text-lg font-bold">{bank_name}</h2>
-            <div className="rounded-lg bg-opacity-15 bg-white px-2 py-1">
-              <FontAwesomeIcon icon={faGear} className="text-white" />
+            <h2 className="text-md font-bold">{bank_name}</h2>
+            <div className="rounded-lg hover:cursor bg-opacity-15 bg-white px-2 py-1">
+              <button className='hover:cursor' onClick={onClick}>
+                <FontAwesomeIcon icon={faGear} className="text-white" />
+              </button>
             </div>
           </div>
           <div className="flex justify-between items-center mt-2">
