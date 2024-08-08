@@ -6,11 +6,13 @@ import { faMusic, faHandHoldingHeart, faVideo, faBuilding, faGamepad, faPodcast,
 import { app } from '../Firebase/firebase'; 
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import UserContext from '../Context/UserContext';
+import Modal from '../Components/General/Modal';
 
 const Search = ({ isUserDrawerOpen, isMobile }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
+  const [modalMessage, setModalMessage] = useState('');
   const { recipientsLoaded, recipientPreference } = useContext(UserContext);
 
   const db = getFirestore(app);
@@ -90,6 +92,7 @@ const Search = ({ isUserDrawerOpen, isMobile }) => {
   return (
     <div className="flex flex-col items-center min-h-screen p-2 sm:p-4">
       <div className={`w-full max-w-2xl ${isSearching ? 'top-0 left-0 right-0 p-2 sm:p-4' : 'mt-20 sm:mt-60'}`}>
+      {modalMessage && <Modal message={modalMessage} onClose={() => setModalMessage('')} />}
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8 text-center">Find Your Cause</h1>
         <SearchBar
           searchValue={searchValue}
@@ -114,7 +117,7 @@ const Search = ({ isUserDrawerOpen, isMobile }) => {
         ) : (
           isSearching && (
             <div className="w-full max-w-2xl mt-4 mb-16">
-              <SearchResults results={searchResults} />
+              <SearchResults results={searchResults} setModalMessage={setModalMessage} />
             </div>
           )
         )

@@ -217,6 +217,11 @@ exports.addNewRecipient = functions.https.onRequest((req, res) => {
             // Check if the recipients already exists
             const recipient_exists = current_recipients.some(recipient => recipient.recipient_id === recipient_id);
 
+            // Check if user is at maximum recipients of 8
+            if (current_recipients.length >= 8) {
+              return res.status(400).send({ message: 'User has reach maximum allowed recipients', max: true, current_recipients });
+            }
+
             if (!recipient_exists) {
               // Step 3:
               // Calculate the total recipients + the new one being added

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import UserContext from '../../Context/UserContext';
 
-const PieChart = ({ total, communities }) => {
-  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#66D7D1', '#F7FFF7', '#FFE66D'];
+const PieChart = ({ total }) => {
+  const { recipientPreference } = useContext(UserContext);
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#66D7D1', '#ACFFAC', '#FFE66D'];
   let startAngle = 0;
 
   const svgSize = 200;
@@ -11,8 +13,9 @@ const PieChart = ({ total, communities }) => {
   return (
     <div className="relative w-48 h-48 mx-auto mb-4">
       <svg viewBox={`0 0 ${svgSize} ${svgSize}`} className="w-full h-full">
-        {communities.map((community, index) => {
-          const angle = (community.percentage / 100) * 360;
+        {recipientPreference.map((recipient, index) => {
+          // console.log(recipient)
+          const angle = (recipient.percentage / 100) * 360;
           const endAngle = startAngle + angle;
           
           const x1 = svgSize / 2 + radius * Math.cos((Math.PI * startAngle) / 180);
@@ -31,7 +34,7 @@ const PieChart = ({ total, communities }) => {
 
           return (
             <path
-              key={community.name}
+              key={recipient.recipient_name}
               d={pathData}
               fill="none"
               stroke={colors[index % colors.length]}

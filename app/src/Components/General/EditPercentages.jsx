@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import UserContext from '../../Context/UserContext';
 
-const EditPercentages = ({ communities, onSave, onCancel }) => {
-  const [editedCommunities, setEditedCommunities] = useState(communities);
+const EditPercentages = ({ onSave, onCancel }) => {
+  const { recipientPreference } = useContext(UserContext);
+  const [editedCommunities, setEditedCommunities] = useState(recipientPreference);
   const [totalPercentage, setTotalPercentage] = useState(100);
-  const [originalCommunities, setOriginalCommunities] = useState(communities);
+  const [originalCommunities, setOriginalCommunities] = useState(recipientPreference);
 
   useEffect(() => {
-    setEditedCommunities(communities);
-    setOriginalCommunities(communities);
-  }, [communities]);
+    // console.log(recipientPreference)
+    setEditedCommunities(recipientPreference);
+    setOriginalCommunities(recipientPreference);
+  }, [recipientPreference]);
 
   const handleSliderChange = (index, newValue) => {
     const roundedValue = Math.round(newValue / 5) * 5;
@@ -54,20 +57,22 @@ const EditPercentages = ({ communities, onSave, onCancel }) => {
     <div className="bg-white p-6 rounded-lg shadow relative h-full">
       <h3 className="font-bold text-lg mb-4">Adjust Percentages</h3>
       {editedCommunities.map((community, index) => (
-        <div key={community.name} className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            {community.name}
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={community.percentage}
-            onChange={(e) => handleSliderChange(index, parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-            disabled={totalPercentage === 100 && community.percentage === 0}
-          />
+        <div key={community.recipient_name} className="my-4 pb-2 border-b">
+          <div className='flex text-nowrap justify-between items-end'>
+            <label className="p-0 m-0 block text-sm font-medium text-gray-700">
+              {community.recipient_name}
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={community.percentage}
+              onChange={(e) => handleSliderChange(index, parseInt(e.target.value))}
+              className="w-2/5 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              disabled={totalPercentage === 100 && community.percentage === 0}
+            />
+          </div>
           <span className="text-sm text-gray-600">{community.percentage}%</span>
         </div>
       ))}
