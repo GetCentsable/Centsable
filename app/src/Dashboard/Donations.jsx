@@ -41,7 +41,7 @@ const Donations = ({ isUserDrawerOpen }) => {
       // console.log(date);
       if (isWithinInterval(date, { start: previousMonday, end: currentDate })) {
         const dateTotal = transactionEntries.reduce((daySum, transaction) => {
-          return daySum + parseFloat(transaction.amount);
+          return daySum + parseFloat(transaction.round_up);
         }, 0);
         return totalSum + dateTotal;
       }
