@@ -16,13 +16,89 @@ const Accounts = ({ isUserDrawerOpen }) => {
   // Insantiate firebase auth
   const auth = getAuth(app);
 
+  // Function that loads user accounts
+  // from db, then adds those accounts to
+  // the page
+  const getLinkedAccounts = async () => {
+    // Path to firebase function, requires authorization verification
+    const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/getLinkedAccounts';
+
+    try {
+      // Getting current user object from firebase auth
+      const currentUser = auth.currentUser;
+
+      if (currentUser) {
+        // Generate firebase user id token from current user
+        const idToken = await currentUser.getIdToken();
+
+        // Fetch call to getLinkedAcounts function
+        // to get all users accounts
+        const response = await fetch(path, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            uid: currentUser.uid,
+          }),
+        });
+
+        // If request failed, set linked_accounts state to null and return
+        if (!response.ok) {
+          dispatch({ type: "SET_STATE", state: { linked_accounts: null } });
+          setLoading(false);
+          const errorData = response.json();
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error}`);
+        }
+
+        // Check the data for errors
+        const data = await response.json();
+        if (!data) {
+          dispatch({ type: "SET_STATE", state: { linked_accounts: null } });
+          setLoading(false);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // If there are no errors, add the linked accounts
+        // array to the context linked account
+        dispatch({ type: "SET_STATE", state: { linked_accounts: data.user_banks } });
+        // console.log('Successful linked account retrieval, data is:', data.user_banks);
+        // console.log('Link ready is:', link_ready);
+      } else {
+        throw new Error('No current user found');
+      }
+    } catch (err) {
+      console.log('There was an error fetching user linked accounts:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    // Function that loads user accounts
-    // from db, then adds those accounts to
-    // the page
-    const getLinkedAccounts = async () => {
+    setLoading(true);
+    
+    // Invoke the async function without timeout on page load
+    if (prevLinkCallStartedRef.current === linkCallStarted) {
+      getLinkedAccounts();
+    }
+
+    // Invoke the async function with timeout if linkCallStarted toggles from true to false
+    if (prevLinkCallStartedRef.current && !linkCallStarted) {
+      setTimeout(() => {
+        getLinkedAccounts();
+      }, 300);
+    }
+
+    // Update prevLinkCallStartedRef to the current value
+    prevLinkCallStartedRef.current = linkCallStarted;
+  }, [dispatch, linkCallStarted])
+
+  const removeLinkedAccount = async (bank, account) => {
+    // Function that removes an account from the users linked accounts
+    const removeAccount = async () => {
       // Path to firebase function, requires authorization verification
-      const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/getLinkedAccounts';
+      const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/removeLinkedAccount';
 
       try {
         // Getting current user object from firebase auth
@@ -42,12 +118,13 @@ const Accounts = ({ isUserDrawerOpen }) => {
             },
             body: JSON.stringify({
               uid: currentUser.uid,
+              bank: bank,
+              account: account,
             }),
           });
 
           // If request failed, set linked_accounts state to null and return
           if (!response.ok) {
-            dispatch({ type: "SET_STATE", state: { linked_accounts: null } });
             setLoading(false);
             const errorData = response.json();
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error}`);
@@ -56,21 +133,18 @@ const Accounts = ({ isUserDrawerOpen }) => {
           // Check the data for errors
           const data = await response.json();
           if (!data) {
-            dispatch({ type: "SET_STATE", state: { linked_accounts: null } });
             setLoading(false);
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          // If there are no errors, add the linked accounts
-          // array to the context linked account
-          dispatch({ type: "SET_STATE", state: { linked_accounts: data.user_banks } });
-          // console.log('Successful linked account retrieval, data is:', data.user_banks);
+          // If there are no errors, call get linked accounts again
+          await getLinkedAccounts();
           // console.log('Link ready is:', link_ready);
         } else {
           throw new Error('No current user found');
         }
       } catch (err) {
-        console.log('There was an error fetching user linked accounts:', err);
+        console.log('There was an error removing the account:', err);
       } finally {
         setLoading(false);
       }
@@ -79,19 +153,19 @@ const Accounts = ({ isUserDrawerOpen }) => {
     
     // Invoke the async function without timeout on page load
     if (prevLinkCallStartedRef.current === linkCallStarted) {
-      getLinkedAccounts();
+      removeAccount();
     }
 
     // Invoke the async function with timeout if linkCallStarted toggles from true to false
     if (prevLinkCallStartedRef.current && !linkCallStarted) {
       setTimeout(() => {
-        getLinkedAccounts();
+        removeAccount();
       }, 300);
     }
 
     // Update prevLinkCallStartedRef to the current value
     prevLinkCallStartedRef.current = linkCallStarted;
-  }, [dispatch, linkCallStarted])
+  };
 
   useEffect(() => {
     if(link_ready) {
@@ -120,7 +194,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
           </div>
         </div>
       ) : (
-        linked_accounts ? (
+        linked_accounts.length !== 0  ? (
           <div className="linked-account-container max-w-8xl">
             <div className="flex flex-wrap justify-center">
               {linked_accounts.map((bank, index) => (
@@ -130,6 +204,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
                       className="w-full md-lg:w-1/2 xl:w-1/3 3xl:w-1/4 p-4"
                     >
                         <Card
+                          onClick={() => removeLinkedAccount(bank.institution_name, account.account_name)}
                           bank_name={bank.institution_name}
                           mask={account.mask}
                           account_name={account.account_name}
@@ -151,10 +226,10 @@ const Accounts = ({ isUserDrawerOpen }) => {
             </div>
           ) : (
             <div className="flex items-center justify-center h-full flex-col" style={{ minHeight: '70vh' }}>
-            <h1 className='xl:mb-6 xl:text-2xl text-xl'>Get Started Contributing</h1>
+            <h1 className='xl:mb-0 xl:text-2xl text-xl'>Get Started Contributing</h1>
             <PlaidLinkButton
               button_text={'Link Your First Account'}
-              className="inline-flex items-center xl:p-6 xl:text-6xl max-w-none"
+              className="inline-flex mt-3 items-center xl:p-3 xl:text-3xl max-w-none"
             />
             </div>
           )

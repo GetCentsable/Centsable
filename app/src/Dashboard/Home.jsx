@@ -27,7 +27,7 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem, isMobile }) => {
     },
     {
       title: "Tulsa",
-      total: 10094,
+      total: 396,
       communities: [
         { name: "Community X", percentage: 40 },
         { name: "Community Y", percentage: 35 },
@@ -36,7 +36,7 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem, isMobile }) => {
     },
     {
       title: "All",
-      total: 24230,
+      total: 2439,
       communities: [
         { name: "Community 1", percentage: 30 },
         { name: "Community 2", percentage: 25 },
