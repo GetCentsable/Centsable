@@ -3,16 +3,22 @@ import AccountHeader from '../Components/General/AccountHeader';
 import PlaidLinkButton from '../Components/Plaid/PlaidLinkButton.jsx';
 import SimpleButton from '../Components/General/SimpleButton.jsx';
 import Card from '../Components/General/Card';
+import PlaidConnectInstructions from '../Components/Plaid/PlaidConnectInstructions.jsx';
 import PlaidContext from '../Context/PlaidContext';
 import { app } from "../Firebase/firebase.js";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAuth } from 'firebase/auth';
+import { HashNavigation } from 'swiper/modules';
 
 const Accounts = ({ isUserDrawerOpen }) => {
   const { linked_accounts, link_ready, linkSuccess, linkCallStarted, dispatch } = useContext(PlaidContext);
   const [ loading, setLoading ] = useState(false);
   const [ ready, setReady ] = useState(false);
   const prevLinkCallStartedRef = useRef(linkCallStarted);
+  const [isAdmin, setIsAdmin] = useState(false);
 
+  // Instantiate firebase firestore
+  const db = getFirestore();
   // Insantiate firebase auth
   const auth = getAuth(app);
 
@@ -101,6 +107,33 @@ const Accounts = ({ isUserDrawerOpen }) => {
     }
   }, [link_ready])
 
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    
+    if (currentUser) {
+      const userId = currentUser.uid;
+      const userDocRef = doc(db, "users", userId);
+    
+      // Fetch the user document
+      getDoc(userDocRef)
+        .then((docSnap) => {
+          if (docSnap.exists()) {
+            // Get the admin field value
+            const isAdmin = docSnap.data().admin;
+            console.log("Admin status:", isAdmin);
+            setIsAdmin(isAdmin);
+          } else {
+            console.log("No such document!");
+          }
+        })
+        .catch((error) => {
+          console.error("Error getting user document:", error);
+        });
+    } else {
+      console.log("No user is signed in.");
+    }
+  }, [])
+
   return (
     <div className="p-6 pt-6">
       <AccountHeader
@@ -109,6 +142,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
         buttonText="Add account"
         isUserDrawerOpen={isUserDrawerOpen}
       />
+      {!isAdmin && !linked_accounts && <PlaidConnectInstructions/>}
       {loading ? (
         <div className="loading-spinner-container flex items-center justify-center h-full" style={{ minHeight: '70vh' }}>
           <div role="status">
