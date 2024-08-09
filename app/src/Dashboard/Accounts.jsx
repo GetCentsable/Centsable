@@ -207,7 +207,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
       />
       {!isAdmin && linked_accounts.length === 0 && <PlaidConnectInstructions/>}
       {loading ? (
-        <div className="loading-spinner-container flex items-center justify-center h-full" style={{ minHeight: '70vh' }}>
+        <div className="loading-spinner-container flex items-center justify-center h-full" style={!isAdmin && linked_accounts.length === 0 ? { minHeight: '30vh' } : { minHeight: '70vh' }}>
           <div role="status">
             <svg aria-hidden="true" className="inline w-36 h-36 text-gray-200 animate-spin dark:text-neutral-300 fill-red-400" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
@@ -241,7 +241,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
           </div>
         ) : (
           !ready ? (
-            <div className="flex items-center justify-center h-full flex-col" style={{ minHeight: '70vh' }}>
+            <div className="flex items-center justify-center h-full flex-col" style={!isAdmin && linked_accounts.length === 0 ? { minHeight: '30vh' } : { minHeight: '70vh' }}>
             <h1 className='xl:mb-6 xl:text-2xl text-xl'>Get Started Contributing</h1>
               <SimpleButton
                   title={'Loading...'}
@@ -249,7 +249,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
               />
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full flex-col" style={{ minHeight: '70vh' }}>
+            <div className="flex items-center justify-center h-full flex-col" style={!isAdmin && linked_accounts.length === 0 ? { minHeight: '30vh' } : { minHeight: '70vh' }}>
             <h1 className='xl:mb-0 xl:text-2xl text-xl'>Get Started Contributing</h1>
             <PlaidLinkButton
               button_text={'Link Your First Account'}
