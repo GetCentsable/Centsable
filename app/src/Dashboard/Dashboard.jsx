@@ -35,27 +35,27 @@ const Dashboard = () => {
     mission: "To make charitable donations accessible and effortless for everyone",
     team: [
       {
-        name: "Tayler Odinson",
+        name: "Tayler Coon",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       },
       {
-        name: "Robert Banner",
+        name: "Robert Farley",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       },
       {
-        name: "Benjamin Parker",
+        name: "Benjamin Harper",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       },
       {
-        name: "Sloane Johansson",
+        name: "Sloane Markland",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       },
       {
-        name: "Shadi Downey Jr",
+        name: "Shadi Shwiyat",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       }
