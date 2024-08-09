@@ -158,7 +158,7 @@ const Dashboard = () => {
 
           if (!response.ok) {
             setRecipientPreference([]);
-            setRecipientsLoaded(false);
+            setRecipientsLoaded(true);
             const errorData = await response.json();
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
           }
@@ -166,7 +166,7 @@ const Dashboard = () => {
           const data = await response.json();
           if (!data) {
             setRecipientPreference([]);
-            setRecipientsLoaded(false);
+            setRecipientsLoaded(true);
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
