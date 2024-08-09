@@ -13,6 +13,7 @@ import AdminPage from '../Admin/AdminPage';
 import UserDrawer from '../Components/General/UserDrawer';
 import TransactionContext from '../Context/TransactionsContext';
 import UserContext from '../Context/UserContext.jsx';
+import PlaidContext from '../Context/PlaidContext.jsx';
 import AboutUsModal from '../Components/General/AboutUsModal';
 
 const Dashboard = () => {
@@ -34,27 +35,27 @@ const Dashboard = () => {
     mission: "To make charitable donations accessible and effortless for everyone",
     team: [
       {
-        name: "Tayler Odinson",
+        name: "Tayler Coon",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       },
       {
-        name: "Robert Banner",
+        name: "Robert Farley",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       },
       {
-        name: "Benjamin Parker",
+        name: "Benjamin Harper",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       },
       {
-        name: "Sloane Johansson",
+        name: "Sloane Markland",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       },
       {
-        name: "Shadi Downey Jr",
+        name: "Shadi Shwiyat",
         role: "Co-Founder",
         image: "https://picsum.photos/100/100"
       }
@@ -68,6 +69,10 @@ const Dashboard = () => {
       "Whether you're passionate about environmental conservation, supporting education, or helping those in need, Centsable empowers you to contribute directly to the causes that matter the most to you."
     ]
   };
+
+  const {
+    linked_accounts,
+  } = useContext(PlaidContext);
 
   const {
     setTransactions,
@@ -132,7 +137,7 @@ const Dashboard = () => {
     };
 
     getUserTransactions();
-  }, []);
+  }, [linked_accounts]);
 
   // Checks current user recipient preference and loads into context
   useEffect(() => {
