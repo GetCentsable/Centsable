@@ -13,6 +13,7 @@ import AdminPage from '../Admin/AdminPage';
 import UserDrawer from '../Components/General/UserDrawer';
 import TransactionContext from '../Context/TransactionsContext';
 import UserContext from '../Context/UserContext.jsx';
+import AboutUsModal from '../Components/General/AboutUsModal';
 
 const Dashboard = () => {
   const [isNavBarOpen, setIsNavBarOpen] = useState(true);
@@ -20,10 +21,59 @@ const Dashboard = () => {
   const [selectedNavItem, setSelectedNavItem] = useState('Home');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAboutUsModalOpen, setIsAboutUsModalOpen] = useState(false);
+  const [aboutUsData, setAboutUsData] = useState({});
+
+  const toggleAboutUsModal = (data) => {
+    setAboutUsData(data);
+    setIsAboutUsModalOpen(!isAboutUsModalOpen);
+  };
+
+  const mainSiteAboutData = {
+    title: "About Centsable",
+    mission: "To make charitable donations accessible and effortless for everyone",
+    team: [
+      {
+        name: "Tayler Odinson",
+        role: "Co-Founder",
+        image: "https://picsum.photos/100/100"
+      },
+      {
+        name: "Robert Banner",
+        role: "Co-Founder",
+        image: "https://picsum.photos/100/100"
+      },
+      {
+        name: "Benjamin Parker",
+        role: "Co-Founder",
+        image: "https://picsum.photos/100/100"
+      },
+      {
+        name: "Sloane Johansson",
+        role: "Co-Founder",
+        image: "https://picsum.photos/100/100"
+      },
+      {
+        name: "Shadi Downey Jr",
+        role: "Co-Founder",
+        image: "https://picsum.photos/100/100"
+      }
+    ],
+    additionalInfo: "Centsable was produced in 2024 for the C20 Capstone project after spending the last 20 months at Atlas School. Our mission is to revolutionize charitable giving, making it effortless for everyone to make a difference in the world.",
+    presentationHighlights: [
+      "Imagine if every cup of coffee, every grocery run, and every online purchase had the ability to impact the world around you.",
+      "Now, imagine if that could happen. Like clockwork. Effortlessly.",
+      "Let me introduce you to Centsable, where your spare change makes a big difference.",
+      "Centsable is a web-based crowdsourcing application designed to round up your daily transactions to the nearest dollar and donate that spare change to the cause of your choice.",
+      "Whether you're passionate about environmental conservation, supporting education, or helping those in need, Centsable empowers you to contribute directly to the causes that matter the most to you."
+    ]
+  };
+
   const {
     setTransactions,
     setTransactionsLoaded,
   } = useContext(TransactionContext);
+
   const {
     recipientPreference,
     recipientsLoaded,
@@ -183,21 +233,38 @@ const Dashboard = () => {
           toggleUserDrawer={toggleUserDrawer}
           selectedItem={selectedNavItem}
           setSelectedItem={setSelectedNavItem}
-          isAdmin={isAdmin} // Pass isAdmin to NavBar
+          isAdmin={isAdmin}
         />
         <main className={`
           flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 transition-all duration-300 min-h-screen
           ${isMobile ? 'mt-16' : (isNavBarOpen ? 'md:ml-64' : 'md:ml-20')}
         `}>
-          <Routes>
-            <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
-            <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
-            <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
-            <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} />} />
-            <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
-            {isAdmin && <Route path="/admin" element={<AdminPage />} />}
-          </Routes>
+          <div className="relative">
+            <div className="absolute top-4 left-6 z-10">
+              <button
+                onClick={() => toggleAboutUsModal(mainSiteAboutData)}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                About Centsable
+              </button>
+            </div>
+          </div>
+          <div className="pt-16"> {/* Add padding to prevent content from being hidden behind the button */}
+            <Routes>
+              <Route path="/" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
+              <Route path="/home" element={<Home isUserDrawerOpen={isUserDrawerOpen} setSelectedNavItem={setSelectedNavItem} isMobile={isMobile} />} />
+              <Route path="/search" element={<Search isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+              <Route path="/donations" element={<Donations isUserDrawerOpen={isUserDrawerOpen} />} />
+              <Route path="/accounts" element={<Accounts isUserDrawerOpen={isUserDrawerOpen} isMobile={isMobile} />} />
+              {isAdmin && <Route path="/admin" element={<AdminPage />} />}
+            </Routes>
+          </div>
         </main>
+        <AboutUsModal
+          isOpen={isAboutUsModalOpen}
+          onClose={() => setIsAboutUsModalOpen(false)}
+          data={mainSiteAboutData}
+        />
       </div>
     </Router>
   );
