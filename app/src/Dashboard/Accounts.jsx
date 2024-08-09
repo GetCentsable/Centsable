@@ -230,7 +230,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
                       mask={account.mask}
                       account_name={account.account_name}
                       account_subtype={account.subtype}
-                      onRemove={() => handleRemoveCard(bankIndex, accountIndex)}
+                      onRemove={() => removeLinkedAccount(bank.institution_name, account.account_name)}
                       onChangeColor={(newColor) => handleChangeCardColor(bankIndex, accountIndex, newColor)}
                     />
                   </div>
