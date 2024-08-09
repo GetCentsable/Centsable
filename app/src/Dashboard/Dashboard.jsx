@@ -16,6 +16,13 @@ import UserContext from '../Context/UserContext.jsx';
 // import PlaidContext from '../Context/PlaidContext.jsx';
 import AboutUsModal from '../Components/General/AboutUsModal';
 
+// About Us Images
+import tayler from '../assets/Tayler.png';
+import rob from '../assets/Rob.png';
+import ben from '../assets/Ben.png';
+import sloane from '../assets/Sloane.png';
+import shadi from '../assets/Shadi.png';
+
 const Dashboard = () => {
   const [isNavBarOpen, setIsNavBarOpen] = useState(true);
   const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
@@ -31,43 +38,46 @@ const Dashboard = () => {
   };
 
   const mainSiteAboutData = {
-    title: "About Centsable",
-    mission: "To make charitable donations accessible and effortless for everyone",
-    team: [
+    aboutUsTitle: "Thanks for checking out Centsable!",
+    teamPhotos: [
       {
         name: "Tayler Coon",
-        role: "Co-Founder",
-        image: "https://picsum.photos/100/100"
+        role: "Design & Front End",
+        image: tayler,
+        linkedIn: "https://www.linkedin.com/in/taylercoon/"
       },
       {
         name: "Robert Farley",
-        role: "Co-Founder",
-        image: "https://picsum.photos/100/100"
+        role: "Back End",
+        image: rob,
+        linkedIn: "https://www.linkedin.com/in/robertfarley89/"
       },
       {
         name: "Benjamin Harper",
-        role: "Co-Founder",
-        image: "https://picsum.photos/100/100"
+        role: "Database & Full Stack",
+        image: ben,
+        linkedIn: "https://www.linkedin.com/in/ben-harper-webdev/"
       },
       {
         name: "Sloane Markland",
-        role: "Co-Founder",
-        image: "https://picsum.photos/100/100"
+        role: "Project Manager",
+        image: sloane,
+        linkedIn: "https://www.linkedin.com/in/sloanemarkland/"
       },
       {
         name: "Shadi Shwiyat",
-        role: "Co-Founder",
-        image: "https://picsum.photos/100/100"
+        role: "Security & Performance",
+        image: shadi,
+        linkedIn: "https://www.linkedin.com/in/shadi-the-programmer/"
       }
     ],
-    additionalInfo: "Centsable was produced in 2024 for the C20 Capstone project after spending the last 20 months at Atlas School. Our mission is to revolutionize charitable giving, making it effortless for everyone to make a difference in the world.",
-    presentationHighlights: [
-      "Imagine if every cup of coffee, every grocery run, and every online purchase had the ability to impact the world around you.",
-      "Now, imagine if that could happen. Like clockwork. Effortlessly.",
-      "Let me introduce you to Centsable, where your spare change makes a big difference.",
-      "Centsable is a web-based crowdsourcing application designed to round up your daily transactions to the nearest dollar and donate that spare change to the cause of your choice.",
-      "Whether you're passionate about environmental conservation, supporting education, or helping those in need, Centsable empowers you to contribute directly to the causes that matter the most to you."
-    ]
+    aboutUsText: [
+      "Hey there! Thanks for checking out our project.",
+      
+      "Centsable was started as a Capstone project by five Full Stack students from Atlas School Tulsa. In four short weeks, we went through the process of brainstorming, identifying a viable idea, narrowing scope, programming execution, and ended with a great base for a potential startup application.",
+      
+      "Centsable is an app that can be used to make small donations to multiple causes regularly, by automatically rounding up purchases and donating the change to pre-selected content creators or various other organizations. We believe this project has the potential for real-world development and intend to seek backers to help us see through its potential.",
+    ],
   };
 
   // const {
