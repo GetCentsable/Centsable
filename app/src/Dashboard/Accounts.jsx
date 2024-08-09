@@ -66,6 +66,19 @@ const Accounts = ({ isUserDrawerOpen }) => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
+        const loadResponse = await fetch('https://us-central1-centsable-6f179.cloudfunctions.net/loadAllUserTransactions', {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!loadResponse.ok) {
+          setLoading(false);
+          const errorData = loadResponse.json();
+          throw new Error(`HTTP error! status: ${loadResponse.status}, message: ${errorData.error}`);
+        }
+
         // If there are no errors, add the linked accounts
         // array to the context linked account
         dispatch({ type: "SET_STATE", state: { linked_accounts: data.user_banks } });
