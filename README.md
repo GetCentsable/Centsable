@@ -22,6 +22,10 @@ Sloane Markland - Sloane headed up project management, from helping the team def
 
 Shadi Shwiyat - Shadi took on the major responsibility of security and integrating the front and backend.
 
+Rob Farley                  | Shadi Shwiyat
+-------------------------- | -------------------------
+![Rob](./pictures/rob.jpg) | ![Shadi](./pictures/shadi.jpg)
+[Github](https://github.com/Nomad-Rob) - [LinkedIn](https://www.linkedin.com/in/robertfarley89/) | [Github](https://github.com/Shadi-Shwiyat) - [LinkedIn](https://www.linkedin.com/in/shadi-the-programmer/)
 
 ## Visit Centsable!
 
