@@ -28,7 +28,7 @@ Rob Farley                  | Shadi Shwiyat
 [Github](https://github.com/Nomad-Rob) - [LinkedIn](https://www.linkedin.com/in/robertfarley89/) | [Github](https://github.com/Shadi-Shwiyat) - [LinkedIn](https://www.linkedin.com/in/shadi-the-programmer/)
 
 Rob Farley                  | Rob Farley                  | Shadi Shwiyat                  | Rob Farley                  | Shadi Shwiyat
--------------------------- | ------------------------- | -------------------------
+-------------------------- | ------------------------- | ------------------------- | ------------------------- | -------------------------
 ![Rob](./pictures/rob.jpg) | ![Shadi](./pictures/shadi.jpg) | ![Shadi](./pictures/shadi.jpg) | ![Shadi](./pictures/shadi.jpg) | ![Shadi](./pictures/shadi.jpg)
 [Github](https://github.com/Nomad-Rob) - [LinkedIn](https://www.linkedin.com/in/robertfarley89/) | [Github](https://github.com/Shadi-Shwiyat) - [LinkedIn](https://www.linkedin.com/in/shadi-the-programmer/) | [Github](https://github.com/Shadi-Shwiyat) - [LinkedIn](https://www.linkedin.com/in/shadi-the-programmer/) | [Github](https://github.com/Shadi-Shwiyat) - [LinkedIn](https://www.linkedin.com/in/shadi-the-programmer/) | [Github](https://github.com/Shadi-Shwiyat) - [LinkedIn](https://www.linkedin.com/in/shadi-the-programmer/)
 
