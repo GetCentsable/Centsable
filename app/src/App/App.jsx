@@ -4,6 +4,7 @@ import Landing from '../Landing/Landing.jsx'
 import UserContext from '../Context/UserContext.jsx';
 import { app } from '../Firebase/firebase';
 import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
+import { TransactionProvider } from '../Context/TransactionsContext.jsx';
 
 function App() {
   const { isLoggedIn, setIsLoggedIn, setUser } = useContext(UserContext);
@@ -23,7 +24,7 @@ function App() {
         const elapsed = currentTime - parseInt(loginTimestamp, 10);
         const elapsedHours = elapsed / (1000 * 60 * 60);
         // User login timestamp valid for 1 hour
-        if (elapsedHours < .00000001) {
+        if (elapsedHours < 1) {
           // Session is still valid
           // Retrieve the authenticated user
           onAuthStateChanged(auth, async (currentUser) => {
@@ -50,7 +51,13 @@ function App() {
 
   return (
     <>
-      {isLoggedIn ? <Dashboard /> : <Landing />}
+      {isLoggedIn ? (
+        <TransactionProvider>
+          <Dashboard />
+        </TransactionProvider>
+      ) : (
+        <Landing />
+      )}
     </>
   );
 }

@@ -6,8 +6,8 @@ import ImpactSection from '../Components/General/ImpactSection';
 import ContributionsSection from '../Components/General/ContributionsSection';
 import FeaturedSection from '../Components/General/FeaturedSection';
 
-const HomePage = ({ isUserDrawerOpen, setSelectedNavItem }) => {
-  const [selectedCategory, setSelectedCategory] = useState('Personal');
+const HomePage = ({ isUserDrawerOpen, setSelectedNavItem, isMobile }) => {
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const navigate = useNavigate();
 
   const handleViewAll = () => {
@@ -18,7 +18,7 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem }) => {
   const contributions = [
     {
       title: "Personal",
-      total: 2.45,
+      total: 18.45,
       communities: [
         { name: "Community A", percentage: 50 },
         { name: "Community B", percentage: 30 },
@@ -27,7 +27,7 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem }) => {
     },
     {
       title: "Tulsa",
-      total: 10094,
+      total: 2845.50,
       communities: [
         { name: "Community X", percentage: 40 },
         { name: "Community Y", percentage: 35 },
@@ -36,7 +36,7 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem }) => {
     },
     {
       title: "All",
-      total: 24230,
+      total: 4532.60,
       communities: [
         { name: "Community 1", percentage: 30 },
         { name: "Community 2", percentage: 25 },
@@ -48,27 +48,26 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem }) => {
   ];
 
   return (
-    <div className="p-6">
-      <Header 
-        pageTopic="Your Impact"
-        icon={faMagnifyingGlass}
-        buttonText="View All"
-        isUserDrawerOpen={isUserDrawerOpen}
-        onClick={handleViewAll}
-      />
-      
-      <ImpactSection 
-        selectedCategory={selectedCategory} 
-        setSelectedCategory={setSelectedCategory} 
-      />
-      
-      <ContributionsSection 
-        selectedCategory={selectedCategory} 
-        contributions={contributions}
-      />
-      
-      <div className="hidden lg:block">
-        <FeaturedSection />
+    <div className="pl-6 pr-6 pb-6">
+      <div className="container mx-auto max-w-7xl">
+        <Header 
+          pageTopic="Your Impact"
+          icon={faMagnifyingGlass}
+          buttonText="View All"
+          isUserDrawerOpen={isUserDrawerOpen}
+          onClick={handleViewAll}
+          isMobile={isMobile}
+        />
+        
+        <ImpactSection 
+          selectedCategory={selectedCategory} 
+          setSelectedCategory={setSelectedCategory} 
+        />
+        
+        <ContributionsSection 
+          selectedCategory={selectedCategory} 
+          contributions={contributions}
+        />
       </div>
     </div>
   );

@@ -2,16 +2,39 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
     // Match any document in the "users" collection
     match /users/{userId} {
       // Allow read and write access only to authenticated users who are trying to access their own document
       allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow read access to all documents for admin users
+      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
+
+      // Match any document in the "transactions" subcollection
+      match /transactions/{transactionId} {
+        // Allow read access to admin users
+        allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
+        
+        // Allow read and write access to the owner of the transaction
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
     
     // Match any document in the "recipients" collection
     match /recipients/{recipientId} {
       // Allow read access to anyone
       allow read: if true;
+    }
+
+    // Match any document in the "bank_accounts" collection
+    match /bank_accounts/{accountId} {
+      // Allow read access to monthly logs for admin users
+      match /monthly_logs/{logId} {
+        allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
+      }
+
+      // You can add other subcollection rules here if necessary
     }
   }
 }

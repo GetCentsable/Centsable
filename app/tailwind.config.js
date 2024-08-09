@@ -21,6 +21,8 @@ export default {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar-hide')
+  ],
   // purge: ['./src/**/*.{js, jsx, ts, tsx}', './public/index.html'],
 }

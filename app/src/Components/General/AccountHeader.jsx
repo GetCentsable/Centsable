@@ -110,7 +110,7 @@ const AccountHeader = ({ pageTopic, supportingText }) => {
           <p className="text-gray-600">{supportingText}</p>
         </div>
         <div>
-          {linked_accounts ?
+          {linked_accounts.length !== 0 ?
             loading ? 
               <SimpleButton
                 title={'Loading...'}

@@ -21,21 +21,30 @@ const logger = require("firebase-functions/logger");
 
 
 // Import the functions from the other files
-const { getLinkedAccounts } = require('./frontendFunctions');
-const { createLinkToken, exchangePublicToken } = require('./plaidFunctions');
+
+const { getLinkedAccounts, removeLinkedAccount, getUserTransactions, addNewRecipient, removeRecipient, getRecipientsForUser } = require('./frontendFunctions');
+const { createLinkToken, exchangePublicToken, loadAllUserTransactions } = require('./plaidFunctions');
 const { createPaymentIntent } = require('./stripeFunctions');
-const { triggerImmediateTransfer, scheduleDailyTransfer } = require('./transferDailyDonations');
+const { triggerDailyLogs, triggerMonthlyLogs, processMonthlyLog} = require('./recipientMoneyLogAndMove');
+
 
 // Export the frontend functions
 exports.getLinkedAccounts = getLinkedAccounts;
+exports.removeLinkedAccount = removeLinkedAccount;
+exports.getUserTransactions = getUserTransactions;
+exports.addNewRecipient = addNewRecipient;
+exports.removeRecipient = removeRecipient;
+exports.getRecipientsForUser = getRecipientsForUser;
 
 // Export Plaid functions for API request
 exports.createLinkToken = createLinkToken;
 exports.exchangePublicToken = exchangePublicToken;
+exports.loadAllUserTransactions = loadAllUserTransactions;
 
 // Export the stripe functions
 exports.createPaymentIntent = createPaymentIntent;
 
-// Export the transaction ledger functions
-exports.triggerImmediateTransfer = triggerImmediateTransfer;
-exports.scheduleDailyTransfer = scheduleDailyTransfer;
+// Export the Daily and Monthly Totals to Holding Account but not processed but also a function to process the monthly logs
+exports.triggerDailyLogs = triggerDailyLogs
+exports.triggerMonthlyLogs = triggerMonthlyLogs
+exports.processMonthlyLog = processMonthlyLog

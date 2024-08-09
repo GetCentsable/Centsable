@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
+import { app } from "../../Firebase/firebase";
+import { getAuth } from 'firebase/auth';
+import SimpleButton from "./SimpleButton";
+import { faXmark, faPlus } from "@fortawesome/free-solid-svg-icons";
+import UserContext from '../../Context/UserContext.jsx';
 
-const SearchResults = ({ results }) => {
+const SearchResults = ({ results, setModalMessage }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const {
+    setRecipientPreference,
+    setRecipientsLoaded,
+  } = useContext(UserContext);
+
+  const itemsPerPage = 7;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -12,6 +22,121 @@ const SearchResults = ({ results }) => {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  // Instantiate firebase auth
+  const auth = getAuth(app);
+
+  const addRecipient = async (recipient) => {
+    setRecipientsLoaded(false);
+    // console.log(recipient.id)
+
+    const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/addNewRecipient';
+
+    try {
+      const currentUser = auth.currentUser;
+
+      if (currentUser) {
+        const idToken = await currentUser.getIdToken();
+
+        const response = await fetch(path, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            uid: currentUser.uid,
+            recipient_id: recipient.id,
+            recipient_name: recipient.header,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!data) {
+          // setRecipientPreference([]);
+          setRecipientsLoaded(true);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        if (response.status === 400 && data.max) {
+          // Show a message to the user indicating they have reached the max recipients
+          setModalMessage('You have reached the maximum allowed recipients (5). You cannot add more.');
+          console.log('User has hit max recipients');
+          setRecipientPreference(data.current_recipients);
+          return;
+        }
+
+        if (!response.ok) {
+          // setRecipientPreference([]);
+          setRecipientsLoaded(true);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${data.message}`);
+        }
+
+        // console.log(data);
+        setRecipientPreference(data.current_recipients);
+        setRecipientsLoaded(true);
+      } else {
+        throw new Error('No current user found');
+      }
+    } catch (err) {
+      console.log('There was an error fetching user recipient preferences', err);
+    } finally {
+      setRecipientsLoaded(true);
+    }
+  };
+
+  const removeRecipient = async (recipient) => {
+    setRecipientsLoaded(false);
+    // console.log(recipient.id)
+
+    const path = 'https://us-central1-centsable-6f179.cloudfunctions.net/removeRecipient';
+
+    try {
+      const currentUser = auth.currentUser;
+
+      if (currentUser) {
+        const idToken = await currentUser.getIdToken();
+
+        const response = await fetch(path, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            uid: currentUser.uid,
+            recipient_id: recipient.id,
+            recipient_name: recipient.header,
+          }),
+        });
+
+        if (!response.ok) {
+          setRecipientPreference([]);
+          setRecipientsLoaded(false);
+          const errorData = await response.json();
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+        }
+
+        const data = await response.json();
+        if (!data) {
+          setRecipientPreference([]);
+          setRecipientsLoaded(false);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log(data);
+        setRecipientPreference(data.current_recipients);
+        setRecipientsLoaded(true);
+      } else {
+        throw new Error('No current user found');
+      }
+    } catch (err) {
+      console.log('There was an error fetching user recipient preferences', err);
+    } finally {
+      setRecipientsLoaded(true);
+    }
   };
 
   const renderPageNumbers = () => {
@@ -80,22 +205,32 @@ const SearchResults = ({ results }) => {
   };
 
   return (
-    <div className="w-full max-w-2xl mt-32 border rounded-lg overflow-hidden flex flex-col flex-grow">
-      <div className="flex-grow">
+    <div className="w-full max-w-2xl border rounded-lg overflow-hidden flex flex-col min-h-[calc(100vh-20rem)]">
+      <div className="flex-grow overflow-y-auto">
         {currentItems.map((item) => (
-          <div key={item.id} className="p-4 border-b">
-            <h3 className="font-bold">{item.header}</h3>
-            <p>Description: {item.description}</p>
-            <a>Website: {item.website}</a>
-            <p>Category: {item.category}</p>
+          <div className="flex justify-between items-center border-b" key={item.id}>
+            <div className="p-2 sm:p-4">
+              <h3 className="font-bold text-sm sm:text-base">{item.header}</h3>
+              <p className="text-xs sm:text-sm">Description: {item.description}</p>
+              <a className="text-xs sm:text-sm">Website: {item.website}</a>
+              <p className="text-xs sm:text-sm">Category: {item.category}</p>
+            </div>
+            <div className="mr-3 mb-3 self-end">
+              <SimpleButton
+                className={'text-nowrap'}
+                title={item.isSelected ? 'Remove' : 'Support'}
+                icon={item.isSelected ? faXmark : faPlus}
+                onClick={item.isSelected ? () => removeRecipient(item) : () => addRecipient(item) }
+              />
+            </div>
           </div>
         ))}
       </div>
-      <div className="flex justify-center items-center p-4">
+      <div className="flex justify-center items-center p-2 sm:p-4 bg-white border-t">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mx-1 px-2 py-1 sm:px-3 sm:py-1 text-sm sm:text-base rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Previous
         </button>
@@ -103,7 +238,7 @@ const SearchResults = ({ results }) => {
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mx-1 px-2 py-1 sm:px-3 sm:py-1 text-sm sm:text-base rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next
         </button>
@@ -116,7 +251,7 @@ const SearchResults = ({ results }) => {
 const PageButton = ({ pageNumber, currentPage, onClick }) => (
   <button
     onClick={onClick}
-    className={`mx-1 px-3 py-1 rounded ${
+    className={`mx-1 px-2 py-1 sm:px-3 sm:py-1 text-sm sm:text-base rounded ${
       currentPage === pageNumber
         ? "bg-red-400 text-white"
         : "bg-gray-200 text-gray-700 hover:bg-gray-300"

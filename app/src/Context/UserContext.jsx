@@ -1,4 +1,3 @@
-// src/contexts/UserContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from '../Firebase/firebase.js';
@@ -9,6 +8,8 @@ export const UserProvider = ({ children }) => {
   // Global states
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [recipientPreference, setRecipientPreference] = useState([]);
+  const [recipientsLoaded, setRecipientsLoaded] = useState(false);
   const auth = getAuth(app);
 
   // Use effect checks for changes in firebase auth to update
@@ -28,7 +29,15 @@ export const UserProvider = ({ children }) => {
 
   // User Provider passes user states to all children
   return (
-    <UserContext.Provider value={{ user, setUser, isLoggedIn, setIsLoggedIn }}>
+    <UserContext.Provider value={{ user,
+      setUser,
+      isLoggedIn,
+      setIsLoggedIn,
+      recipientPreference,
+      setRecipientPreference,
+      recipientsLoaded,
+      setRecipientsLoaded,
+    }}>
       {children}
     </UserContext.Provider>
   );
