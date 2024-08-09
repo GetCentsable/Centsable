@@ -81,7 +81,7 @@ const Auth = ({ signUp, setSignUp, login, setLogin, onBackToLanding }) => {
       {/* Right side - Impact Sliders & Change Counter */}
       <div className="hidden lg:flex flex-col lg:w-1/2 bg-red-400 p-8">
         <h2 className="text-4xl font-bold text-neutral-100 text-center mb-4">Change made this week</h2>
-        <h3 className="text-2xl font-bold text-neutral-100 text-center mb-8">$1,234.56</h3>
+        <h3 className="text-2xl font-bold text-neutral-100 text-center mb-8">$4,532.60</h3>
         
         <div className="flex-grow flex flex-col justify-end space-y-4 mb-20 overflow-hidden">
           <div className="slider-container">
