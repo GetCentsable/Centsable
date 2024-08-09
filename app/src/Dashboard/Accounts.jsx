@@ -50,9 +50,9 @@ const Accounts = ({ isUserDrawerOpen }) => {
           }),
         });
 
-        // If request failed, set linked_accounts state to null and return
+        // If request failed, set linked_accounts state to empty array and return
         if (!response.ok) {
-          dispatch({ type: "SET_STATE", state: { linked_accounts: null } });
+          dispatch({ type: "SET_STATE", state: { linked_accounts: [] } });
           setLoading(false);
           const errorData = response.json();
           throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error}`);
@@ -61,7 +61,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
         // Check the data for errors
         const data = await response.json();
         if (!data) {
-          dispatch({ type: "SET_STATE", state: { linked_accounts: null } });
+          dispatch({ type: "SET_STATE", state: { linked_accounts: [] } });
           setLoading(false);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -129,7 +129,7 @@ const Accounts = ({ isUserDrawerOpen }) => {
             }),
           });
 
-          // If request failed, set linked_accounts state to null and return
+          // If request failed, set linked_accounts state to empty array and return
           if (!response.ok) {
             setLoading(false);
             const errorData = response.json();
