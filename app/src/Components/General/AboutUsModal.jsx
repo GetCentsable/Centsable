@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons';
 
 const AboutUsModal = ({ isOpen, onClose, data }) => {
-  const { title, description, mission, vision, team, additionalInfo, presentationHighlights } = data;
+  const { aboutUsTitle, teamPhotos, aboutUsText, linkedIn } = data;
   const modalRef = useRef();
 
   useEffect(() => {
@@ -45,51 +45,34 @@ const AboutUsModal = ({ isOpen, onClose, data }) => {
           />
         </button>
         <div className="p-6 pt-12">
-          <h2 className="text-3xl font-bold mb-4">{title}</h2>
-          <p className="text-xl text-gray-600 mb-6">{description}</p>
+          <h2 className="text-3xl font-bold mb-4">{aboutUsTitle}</h2>
           
-          {mission && (
+          {aboutUsText && (
             <div className="mb-6">
-              <h3 className="text-2xl font-semibold mb-2">Our Mission</h3>
-              <p className="text-lg">{mission}</p>
-            </div>
-          )}
-          
-          {vision && (
-            <div className="mb-6">
-              <h3 className="text-2xl font-semibold mb-2">Our Vision</h3>
-              <p className="text-lg">{vision}</p>
-            </div>
-          )}
-          
-          {team && team.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-2xl font-semibold mb-4">Our Team</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {team.map((member, index) => (
-                  <div key={index} className="flex flex-col items-center">
-                    <img src={member.image} alt={member.name} className="w-24 h-24 rounded-full mb-2" />
-                    <h4 className="font-semibold">{member.name}</h4>
-                    <p className="text-sm text-gray-600">{member.role}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {additionalInfo && (
-            <div className="mb-6">
-              <h3 className="text-2xl font-semibold mb-2">Additional Info</h3>
-              <p className="text-lg">{additionalInfo}</p>
+              {aboutUsText.map((paragraph, index) => (
+                <p key={index} className="mb-4">{paragraph}</p>
+              ))}
             </div>
           )}
 
-          {presentationHighlights && presentationHighlights.length > 0 && (
+          {teamPhotos && teamPhotos.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-2xl font-semibold mb-2">Highlights</h3>
-              <div className="space-y-2">
-                {presentationHighlights.map((highlight, index) => (
-                  <p key={index} className="text-lg">{highlight}</p>
+              <h3 className="text-2xl font-semibold mb-4">Our Team</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-8 justify-items-center">
+                {teamPhotos.map((member, index) => (
+                  <div key={index} className="flex flex-col items-center w-32">
+                    <a href={member.linkedIn} target="_blank" rel="noopener noreferrer" className="text-center">
+                      <div className="w-24 h-24 mb-2 rounded-full overflow-hidden flex items-center justify-center bg-gray-200">
+                        <img 
+                          src={member.image} 
+                          alt={member.name} 
+                          className="w-full h-full object-cover object-center"
+                        />
+                      </div>
+                      <h4 className="font-semibold text-nowrap">{member.name}</h4>
+                    </a>
+                    <p className="text-sm text-gray-600 text-center text-nowrap">{member.role}</p>
+                  </div>
                 ))}
               </div>
             </div>

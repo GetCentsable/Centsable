@@ -197,6 +197,33 @@ const Accounts = ({ isUserDrawerOpen }) => {
     dispatch({ type: "SET_STATE", state: { linked_accounts: updatedAccounts } });
   };
 
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+      const userId = currentUser.uid;
+      const userDocRef = doc(db, "users", userId);
+
+      // Fetch the user document
+      getDoc(userDocRef)
+        .then((docSnap) => {
+          if (docSnap.exists()) {
+            // Get the admin field value
+            const isAdmin = docSnap.data().admin;
+            console.log("Admin status:", isAdmin);
+            setIsAdmin(isAdmin);
+          } else {
+            console.log("No such document!");
+          }
+        })
+        .catch((error) => {
+          console.error("Error getting user document:", error);
+        });
+    } else {
+      console.log("No user is signed in.");
+    }
+  }, [])
+
   return (
     <div className="p-6 pt-6">
       <AccountHeader
