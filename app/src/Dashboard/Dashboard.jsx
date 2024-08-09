@@ -13,7 +13,7 @@ import AdminPage from '../Admin/AdminPage';
 import UserDrawer from '../Components/General/UserDrawer';
 import TransactionContext from '../Context/TransactionsContext';
 import UserContext from '../Context/UserContext.jsx';
-import PlaidContext from '../Context/PlaidContext.jsx';
+// import PlaidContext from '../Context/PlaidContext.jsx';
 import AboutUsModal from '../Components/General/AboutUsModal';
 
 const Dashboard = () => {
@@ -70,9 +70,9 @@ const Dashboard = () => {
     ]
   };
 
-  const {
-    linked_accounts,
-  } = useContext(PlaidContext);
+  // const {
+  //   linked_accounts,
+  // } = useContext(PlaidContext);
 
   const {
     setTransactions,
@@ -137,7 +137,7 @@ const Dashboard = () => {
     };
 
     getUserTransactions();
-  }, [linked_accounts]);
+  }, []);
 
   // Checks current user recipient preference and loads into context
   useEffect(() => {
