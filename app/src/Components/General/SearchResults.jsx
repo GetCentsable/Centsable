@@ -62,7 +62,7 @@ const SearchResults = ({ results, setModalMessage }) => {
 
         if (response.status === 400 && data.max) {
           // Show a message to the user indicating they have reached the max recipients
-          setModalMessage('You have reached the maximum allowed recipients (8). You cannot add more.');
+          setModalMessage('You have reached the maximum allowed recipients (5). You cannot add more.');
           console.log('User has hit max recipients');
           setRecipientPreference(data.current_recipients);
           return;
