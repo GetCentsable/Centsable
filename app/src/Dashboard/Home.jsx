@@ -48,25 +48,27 @@ const HomePage = ({ isUserDrawerOpen, setSelectedNavItem, isMobile }) => {
   ];
 
   return (
-    <div className="p-6">
-      <Header 
-        pageTopic="Your Impact"
-        icon={faMagnifyingGlass}
-        buttonText="View All"
-        isUserDrawerOpen={isUserDrawerOpen}
-        onClick={handleViewAll}
-        isMobile={isMobile}
-      />
-      
-      <ImpactSection 
-        selectedCategory={selectedCategory} 
-        setSelectedCategory={setSelectedCategory} 
-      />
-      
-      <ContributionsSection 
-        selectedCategory={selectedCategory} 
-        contributions={contributions}
-      />
+    <div className="pl-6 pr-6 pb-6">
+      <div className="container mx-auto max-w-7xl">
+        <Header 
+          pageTopic="Your Impact"
+          icon={faMagnifyingGlass}
+          buttonText="View All"
+          isUserDrawerOpen={isUserDrawerOpen}
+          onClick={handleViewAll}
+          isMobile={isMobile}
+        />
+        
+        <ImpactSection 
+          selectedCategory={selectedCategory} 
+          setSelectedCategory={setSelectedCategory} 
+        />
+        
+        <ContributionsSection 
+          selectedCategory={selectedCategory} 
+          contributions={contributions}
+        />
+      </div>
     </div>
   );
 };
