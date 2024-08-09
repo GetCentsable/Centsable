@@ -68,7 +68,7 @@ const PieChartSection = ({ weeklyTotal, onUpdateCommunities, onClick }) => {
             </div>
           )}
           <div className="border-t pt-6">
-            <h3 className="font-bold text-lg mb-4">Communities</h3>
+            <h3 className="font-bold text-lg mb-4">Causes you Support</h3>
             <CommunitiesList />
           </div>
         </div>
