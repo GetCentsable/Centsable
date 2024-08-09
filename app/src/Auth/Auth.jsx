@@ -7,6 +7,8 @@ import Login from './Login';
 import Register from './Register';
 import ImpactCards from '../Components/General/ImpactCards';
 import logo from '../assets/logo.png';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // Dummy Data Images
 import coinsGrowth from '../assets/coinsGrowth.png'
@@ -22,7 +24,7 @@ import taylorSwiftCake from '../assets/taylorSwiftCake.png'
 import danielsLaboratory from '../assets/danielsLaboratory.png'
 import anthonysAwesomePhotos from '../assets/anthonysAwesomePhotos.png'
 
-const Auth = ({ signUp, setSignUp, login, setLogin }) => {
+const Auth = ({ signUp, setSignUp, login, setLogin, onBackToLanding }) => {
   const handleToggle = (e) => {
     e.preventDefault();
     setSignUp(!signUp);
@@ -49,7 +51,16 @@ const Auth = ({ signUp, setSignUp, login, setLogin }) => {
   return (
     <div className="min-h-screen flex lg:flex-row">
       {/* Left side - Auth form */}
-      <div className="w-full lg:w-1/2 bg-neutral-100 flex flex-col justify-center px-8 lg:px-16">
+      <div className="w-full lg:w-1/2 bg-neutral-100 flex flex-col justify-center px-8 lg:px-16 relative">
+        {/* Back button */}
+        <button 
+          onClick={onBackToLanding}
+          className="absolute top-4 left-4 text-red-400 hover:text-red-500 flex items-center"
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="size-9"/>
+          <span className="ml-2">Back</span>
+        </button>
+
         <div className="max-w-md w-full mx-auto">
           <img src={logo} alt="Centsable logo" className="w-96" />
           {login ? <Login /> : <Register setLogin={setLogin} setSignUp={setSignUp} />}

@@ -181,32 +181,20 @@ const Accounts = ({ isUserDrawerOpen }) => {
     }
   }, [link_ready])
 
-  useEffect(() => {
-    const currentUser = auth.currentUser;
-    
-    if (currentUser) {
-      const userId = currentUser.uid;
-      const userDocRef = doc(db, "users", userId);
-    
-      // Fetch the user document
-      getDoc(userDocRef)
-        .then((docSnap) => {
-          if (docSnap.exists()) {
-            // Get the admin field value
-            const isAdmin = docSnap.data().admin;
-            console.log("Admin status:", isAdmin);
-            setIsAdmin(isAdmin);
-          } else {
-            console.log("No such document!");
-          }
-        })
-        .catch((error) => {
-          console.error("Error getting user document:", error);
-        });
-    } else {
-      console.log("No user is signed in.");
+  const handleRemoveCard = (bankIndex, accountIndex) => {
+    const updatedAccounts = [...linked_accounts];
+    updatedAccounts[bankIndex].accounts.splice(accountIndex, 1);
+    if (updatedAccounts[bankIndex].accounts.length === 0) {
+      updatedAccounts.splice(bankIndex, 1);
     }
-  }, [])
+    dispatch({ type: "SET_STATE", state: { linked_accounts: updatedAccounts } });
+  };
+
+  const handleChangeCardColor = (bankIndex, accountIndex, newColor) => {
+    const updatedAccounts = [...linked_accounts];
+    updatedAccounts[bankIndex].accounts[accountIndex].color = newColor;
+    dispatch({ type: "SET_STATE", state: { linked_accounts: updatedAccounts } });
+  };
 
   return (
     <div className="p-6 pt-6">
@@ -231,21 +219,22 @@ const Accounts = ({ isUserDrawerOpen }) => {
         linked_accounts.length !== 0  ? (
           <div className="linked-account-container max-w-8xl">
             <div className="flex flex-wrap justify-center">
-              {linked_accounts.map((bank, index) => (
+              {linked_accounts.map((bank, bankIndex) => (
                 bank.accounts.map((account, accountIndex) => (
-                    <div
-                      key={`${bank.institution_name}-${account.account_name}`}
-                      className="w-full md-lg:w-1/2 xl:w-1/3 3xl:w-1/4 p-4"
-                    >
-                        <Card
-                          onClick={() => removeLinkedAccount(bank.institution_name, account.account_name)}
-                          bank_name={bank.institution_name}
-                          mask={account.mask}
-                          account_name={account.account_name}
-                          account_subtype={account.subtype}
-                        />
-                    </div>
-                  ))
+                  <div
+                    key={`${bank.institution_name}-${account.account_name}`}
+                    className="w-full md-lg:w-1/2 xl:w-1/3 3xl:w-1/4 p-4"
+                  >
+                    <Card
+                      bank_name={bank.institution_name}
+                      mask={account.mask}
+                      account_name={account.account_name}
+                      account_subtype={account.subtype}
+                      onRemove={() => handleRemoveCard(bankIndex, accountIndex)}
+                      onChangeColor={(newColor) => handleChangeCardColor(bankIndex, accountIndex, newColor)}
+                    />
+                  </div>
+                ))
               ))}
             </div>
           </div>

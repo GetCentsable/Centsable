@@ -20,6 +20,11 @@ function Landing() {
     setSignUp(true);
   }
 
+  const handleBackToLanding = () => {
+    setSignUp(false);
+    setLogin(false);
+  }
+
   const typewriterPhrases = [
     "donate to charities",
     "aid disaster relief",
@@ -41,6 +46,7 @@ function Landing() {
           setSignUp={setSignUp}
           login={login}
           setLogin={setLogin}
+          onBackToLanding={handleBackToLanding}
         ></Auth> :
         <div className='landing-container bg-neutral-100 w-full h-screen'>
           <div className='landing-header bg-slate-700'>
