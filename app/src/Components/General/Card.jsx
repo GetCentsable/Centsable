@@ -86,7 +86,7 @@ const Card = ({ bank_name, account_name, mask, onRemove, onChangeColor }) => {
             <button onClick={handleBack} className="absolute top-2 right-2 text-white">
               <FontAwesomeIcon icon={faTimes} />
             </button>
-            <div className="mb-4 mt-4">
+            <div className="mb-1">
               <input
                 type="text"
                 placeholder="Type 'Remove' to delete"
@@ -94,17 +94,17 @@ const Card = ({ bank_name, account_name, mask, onRemove, onChangeColor }) => {
                 onChange={(e) => setRemoveText(e.target.value)}
                 className="px-2 py-1 text-black rounded"
               />
-              <button onClick={handleRemove} className="ml-2 bg-red-500 px-2 py-1 rounded">
+              <button onClick={handleRemove} className="mt-2 mb-6 bg-red-500 px-2 py-1 rounded">
                 Remove
               </button>
             </div>
             <div className="mb-4">
-              <p className="mb-2">Change Color:</p>
+              <p className="mb-3">Change Color:</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {colorOptions.map((color, index) => (
                   <button
                     key={index}
-                    className={`w-8 h-8 rounded-full ${color} border-2 border-white shadow-md transition-transform hover:scale-110`}
+                    className={`w-6 h-6 rounded-full ${color} border-2 border-white shadow-md transition-transform hover:scale-110`}
                     onClick={() => handleChangeColor(color)}
                   ></button>
                 ))}
